@@ -17,6 +17,7 @@ SOURCES = main.cpp \
           captogloveapi.cpp
 
 HEADERS = BasicConnection.h \
+          AdapterImpl_Linux.h \
           BasicExample.h \
           captogloveapi.h
 
