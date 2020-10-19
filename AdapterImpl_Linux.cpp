@@ -10,6 +10,8 @@ namespace Impl{
 
     const bool& AdapterImpl::scan() const{
 
+        return true;
+
     }
 
 }
