@@ -1,8 +1,8 @@
-QT += core
+QT += core bluetooth
 QT -= gui
 
 CONFIG += c+11
-CONFIG += qt debug
+CONFIG += qt
 
 TARGET = CaptoGloveAPI
 
@@ -10,24 +10,27 @@ CONFIG += console
 
 DEFINES += LINUX
 
-SOURCES = main.cpp \
-          AdapterImpl_Linux.cpp \
-          BasicConnection.cpp \
-          BasicExample.cpp \
-          captogloveapi.cpp
+DEFINES += PROJECT_PATH=\"\\\"$${_PRO_FILE_PWD_}/\\\"\"
 
-HEADERS = BasicConnection.h \
-          AdapterImpl_Linux.h \
-          BasicExample.h \
-          captogloveapi.h
+
+SOURCES = main.cpp \
+          captogloveapi.cpp \
+          deviceinfo.cpp \
+          serviceinfo.cpp \
+          characteristicinfo.cpp
+
+HEADERS = captogloveapi.h \
+          deviceinfo.h \
+          serviceinfo.h \
+          characteristicinfo.h
 
 # Linking
 unix{
 
     LIBS += -pthread
 
-    INCLUDEPATH += $$PWD/../CaptoGloveLib/
-    LIBS += -L$$PWD/../CaptoGloveLib -lGSdkCoreStatic
+    #INCLUDEPATH += $$PWD/../CaptoGloveLib/
+    #LIBS += -L$$PWD/../CaptoGloveLib -lGSdkCoreStatic
 
 }
 
