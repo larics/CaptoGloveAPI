@@ -27,10 +27,18 @@ gcc --version
 g++ --version
 ```
 
+## Relevant code 
+
+There is [LE scanner](https://code.qt.io/cgit/qt/qtconnectivity.git/tree/examples/bluetooth/lowenergyscanner?h=5.15) used as example. 
+And there is application where we have continuous exchange of data between BLE server and client on 
+following [link](https://code.qt.io/cgit/qt/qtconnectivity.git/tree/examples/bluetooth/heartrate-game) 
+
 
 ## TODO: 
-- [ ] Find account and explore more about BlueZ library 
-- [ ] Find work-around for BLE implementation 
-- [ ] Write CaptoGloveAPI 
-- [ ] Write ros wrapper for CaptoGloveAPI 
-
+- [ ] Initialize controller 
+- [ ] Establish connection with BLE device
+- [ ] Scan services 
+- [ ] Scan characteristics 
+- [ ] Check for updates of certain characteristsics/services
+- [ ] Add Logger as Singleton 
+- [ ] Add specific methods for reading needed characteristic 

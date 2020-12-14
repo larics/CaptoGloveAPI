@@ -17,44 +17,75 @@
 
 // Specific datatypes include
 #include <QDebug>
+#include <QMetaEnum>
+#include <QTimer>
 
 
 class CaptoGloveAPI : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QVariant devicesList READ getDevices NOTIFY devicesUpdated)
+    Q_PROPERTY(QVariant servicesList READ getServices NOTIFY servicesUpdated)
+    Q_PROPERTY(QVariant charactersiticsList READ getCharacteristics NOTIFY characteristicsUpdated)
+    Q_PROPERTY(bool state READ state NOTIFY stateChanged)
+    Q_PROPERTY(bool controllerError READ hasControllerError)
+
 public:
     CaptoGloveAPI(QObject *parent, QString configPath);
     ~CaptoGloveAPI();
 
-    void saveSettings       (QString path);
-    void loadSettings       (QString path);
+    QVariant getDevices();                                                                  // xx
+    QVariant getServices();                                                                 // xx
+    QVariant getCharacteristics();                                                          // xx
+    QString getUpdate();                                                                    // xx
+    bool state();                                                                           // xx
+    bool hasControllerError() const;                                                        // xx
 
-    void initializeController (DeviceInfo centralDevice);
+    bool isRandomAddress() const;
 
-    void discoverServices(DeviceInfo device, int timeout);
-    void readCharacteristic(CharacteristicInfo characteristic, int timeout);
-    void writeCharacteristicReq(CharacteristicInfo characteristic,
-                                QByteArray Data,
-                                int timeout);
+    void saveSettings       (QString path);                                                 // init, TODO
+    void loadSettings       (QString path);                                                 // init, TODO
 
-    bool isAlive();
+    void initializeController (const QBluetoothDeviceInfo &info);                                  // xx, TODO: Initialize controller
 
-    void start();
-    void processLoop();
+    void start();                                                                           // init, TEST method
+    void processLoop();                                                                     // TODO: implement
 
 public slots:
-    void deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error);
-    void addDevice(const QBluetoothDeviceInfo &device);
+    void startDeviceDiscovery();                                                            // xx
+    void scanServices(DeviceInfo &device);                          // xx
+
+
+    void connectToService(const QString &uuid);
+    void disconnectFromDevice();
+
+private slots:
+    // QBluetoothDeviceDiscoveryAgent
+    void addDevice(const QBluetoothDeviceInfo &device);                                     // xx
+    void deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error);                      // xx
     void deviceScanFinished();
 
+    // QLowEnergyController related
+    void addLowEnergyService (const QBluetoothUuid &uuid);
     void deviceConnected();
     void deviceDisconnected();
     void errorReceived();
-    void addLowEnergyService();
     void serviceScanDone();
 
-private:
+    // QLowEnergyService related
+    void serviceDetailsDiscovered(QLowEnergyService::ServiceState newState);
 
+Q_SIGNALS:
+    void devicesUpdated();
+    void serviceDiscovered();
+    void servicesUpdated();
+    void characteristicsUpdated();
+    void updateChanged();
+    void stateChanged();
+    void disconnected();
+
+private:
+    void setUpdate(const QString &message);
     void getDeviceName();
     void readBatteryLevel();
     void getScanParams();
@@ -63,15 +94,19 @@ private:
 
     QBluetoothDeviceDiscoveryAgent *m_discoveryAgent;
     QBluetoothLocalDevice *localDevice;
-    QString localDeviceName;
 
     QLowEnergyController* m_controller;
     QList<DeviceInfo *> m_devices;
-    QList<ServiceInfo> m_services;
-    QList<CharacteristicInfo> m_characteristics;
+    QList<QBluetoothDeviceInfo> m_devicesBTInfo;
+    QList<ServiceInfo *> m_services;
+    QList<CharacteristicInfo *> m_characteristics;
 
     int m_BLEScanTimeout;
+    bool m_randomAdress;
     bool m_connected;
+    bool m_deviceScanState;
+    QString m_message;
+    DeviceInfo m_peripheralDevice;
 };
 
 #endif // CAPTOGLOVEAPI_H
