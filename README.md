@@ -35,10 +35,13 @@ following [link](https://code.qt.io/cgit/qt/qtconnectivity.git/tree/examples/blu
 
 
 ## TODO: 
-- [ ] Initialize controller 
-- [ ] Establish connection with BLE device
-- [ ] Scan services 
+- [x] Initialize controller 
+- [x] Establish connection with BLE device
+- [x] Scan services 
+- [ ] Check how to discover characteristics
+- [ ] Read battery value
 - [ ] Scan characteristics 
 - [ ] Check for updates of certain characteristsics/services
 - [ ] Add Logger as Singleton 
 - [ ] Add specific methods for reading needed characteristic 
+- [ ] Add protobuffer messages to enable writing in them
