@@ -19,6 +19,8 @@
 #include <QDebug>
 #include <QMetaEnum>
 #include <QTimer>
+#include <QtEndian>
+#include <QThread>
 
 
 class CaptoGloveAPI : public QObject
@@ -29,6 +31,7 @@ class CaptoGloveAPI : public QObject
     Q_PROPERTY(QVariant charactersiticsList READ getCharacteristics NOTIFY characteristicsUpdated)
     Q_PROPERTY(bool state READ state NOTIFY stateChanged)
     Q_PROPERTY(bool controllerError READ hasControllerError)
+    Q_PROPERTY(bool alive READ alive NOTIFY aliveChanged)
 
 public:
     CaptoGloveAPI(QObject *parent, QString configPath);
@@ -38,9 +41,9 @@ public:
     QVariant getServices();                                                                 // xx
     QVariant getCharacteristics();                                                          // xx
     QString getUpdate();                                                                    // xx
+    bool alive() const;
     bool state();                                                                           // xx
     bool hasControllerError() const;                                                        // xx
-
     bool isRandomAddress() const;
 
     void saveSettings       (QString path);                                                 // init, TODO
@@ -66,25 +69,42 @@ private slots:
     void deviceScanFinished();
 
     // QLowEnergyController related
-    void addLowEnergyService (const QBluetoothUuid &uuid);
-    void deviceConnected();
-    void deviceDisconnected();
-    void errorReceived();
-    void serviceScanDone();
+    void addLowEnergyService (const QBluetoothUuid &uuid);                                  // xx
+    void deviceConnected();                                                                 // xx
+    void deviceDisconnected();                                                              // xx
+    void errorReceived();                                                                   // xx
+    void serviceScanDone();                                                                 // xx
 
     // QLowEnergyService related
     void serviceDetailsDiscovered(QLowEnergyService::ServiceState newState);
 
 Q_SIGNALS:
     void devicesUpdated();
-    void serviceDiscovered();
     void servicesUpdated();
     void characteristicsUpdated();
     void updateChanged();
     void stateChanged();
     void disconnected();
+    void aliveChanged();
 
 private:
+    // QLowEnergyController
+    void serviceDiscovered(const QBluetoothUuid &gatt);
+    void checkServiceStatus(const QBluetoothUuid &uuid);
+
+    // Generic Access
+    void GAServiceStateChanged(QLowEnergyService::ServiceState s);
+
+    // Battery service
+    void batteryServiceStateChanged (QLowEnergyService::ServiceState s);
+    void updateBatteryLevelValue(const QLowEnergyCharacteristic &c,
+                                 const QByteArray &value);
+    void confirmedBatteryDescWrite(const QLowEnergyDescriptor &d,
+                                  const QByteArray &value);
+
+
+
+
     void setUpdate(const QString &message);
     void getDeviceName();
     void readBatteryLevel();
@@ -99,10 +119,27 @@ private:
     QList<DeviceInfo *> m_devices;
     QList<QBluetoothDeviceInfo> m_devicesBTInfo;
     QList<ServiceInfo *> m_services;
-    QList<CharacteristicInfo *> m_characteristics;
+    QMap<QBluetoothUuid, CharacteristicInfo*> m_characteristics;
 
-    int m_BLEScanTimeout;
+    int m_scanTimeout;
+
+    // Service flags
     bool m_randomAdress;
+    bool m_foundGAService;
+    bool m_foundBatteryLevelService;
+    bool m_foundScanParamsService;
+    bool m_foundHIDService;
+    bool m_foundHIDControlPoint;
+
+    // Control params
+    bool m_reconnect = true;
+
+    // Services -> it's better to have only one list which contains those services
+    QLowEnergyService *m_batteryLevelService=nullptr;
+    QLowEnergyService *m_GAService = nullptr;
+
+    // Characteristics
+    QLowEnergyDescriptor m_batteryNotificationDesc;
     bool m_connected;
     bool m_deviceScanState;
     QString m_message;
