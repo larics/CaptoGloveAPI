@@ -125,7 +125,7 @@ private:
 
     void setUpdate(const QString &message);
     void getDeviceName();
-    void readBatteryLevel();
+    int readBatteryLevel();
     void getScanParams();
 
     QString m_configPath;
@@ -170,6 +170,9 @@ private:
     bool m_deviceScanState;
     QString m_message;
     DeviceInfo m_peripheralDevice;
+
+    // Values of interest for getter
+    int m_batteryLevelValue;
 };
 
 #endif // CAPTOGLOVEAPI_H
