@@ -40,6 +40,10 @@ public:
     QVariant getDevices();                                                                  // xx
     QVariant getServices();                                                                 // xx
     QVariant getCharacteristics();                                                          // xx
+
+    // Service Getters
+    int getBatteryLevel();                                                                  // xx
+
     QString getUpdate();                                                                    // xx
     bool alive() const;
     bool state();                                                                           // xx
@@ -49,10 +53,12 @@ public:
     void saveSettings       (QString path);                                                 // init, TODO
     void loadSettings       (QString path);                                                 // init, TODO
 
-    void initializeController (const QBluetoothDeviceInfo &info);                                  // xx, TODO: Initialize controller
+    void initializeController (const QBluetoothDeviceInfo &info);                           // xx, TODO: Initialize controller
 
     void start();                                                                           // init, TEST method
     void processLoop();                                                                     // TODO: implement
+    void discoverServices();
+
 
 public slots:
     void startDeviceDiscovery();                                                            // xx
@@ -86,11 +92,14 @@ Q_SIGNALS:
     void stateChanged();
     void disconnected();
     void aliveChanged();
+    void servicesDiscovered();
 
 private:
     // QLowEnergyController
     void serviceDiscovered(const QBluetoothUuid &gatt);
     void checkServiceStatus(const QBluetoothUuid &uuid);
+
+    void serviceStateChanged(QLowEnergyService::ServiceState s);
 
     // Generic Access
     void GAServiceStateChanged(QLowEnergyService::ServiceState s);
@@ -102,8 +111,17 @@ private:
     void confirmedBatteryDescWrite(const QLowEnergyDescriptor &d,
                                   const QByteArray &value);
 
+    // Scan Parameters service
+    void scanParamsServiceStateChanged(QLowEnergyService::ServiceState s);
 
+    void HIDserviceStateChanged(QLowEnergyService::ServiceState s);
 
+    void genericAccessServiceStateChanged(QLowEnergyService::ServiceState s);
+
+    // General
+    void readInitialValue(QLowEnergyService &service);
+
+    void refreshStates();
 
     void setUpdate(const QString &message);
     void getDeviceName();
@@ -129,7 +147,10 @@ private:
     bool m_foundBatteryLevelService;
     bool m_foundScanParamsService;
     bool m_foundHIDService;
-    bool m_foundHIDControlPoint;
+    bool m_foundHIDControlPointService;
+    bool m_foundScanParametersService;
+    bool m_foundDeviceInfoService;
+    bool m_foundFingerPositionService;
 
     // Control params
     bool m_reconnect = true;
@@ -137,10 +158,15 @@ private:
     // Services -> it's better to have only one list which contains those services
     QLowEnergyService *m_batteryLevelService=nullptr;
     QLowEnergyService *m_GAService = nullptr;
+    QLowEnergyService *m_HIDService = nullptr;
+    QLowEnergyService *m_ScanParametersService = nullptr;
+    QLowEnergyService *m_DeviceInfoService = nullptr;
+    QLowEnergyService *m_FingerPositionsService = nullptr;
 
     // Characteristics
     QLowEnergyDescriptor m_batteryNotificationDesc;
     bool m_connected;
+    bool m_discoveredServices;
     bool m_deviceScanState;
     QString m_message;
     DeviceInfo m_peripheralDevice;

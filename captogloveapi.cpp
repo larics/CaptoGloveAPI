@@ -6,13 +6,14 @@ CaptoGloveAPI::CaptoGloveAPI(QObject *parent,  QString configPath) : QObject(par
 
     // Initial setup --> TODO: Add reading from config.ini file
     m_randomAdress = true;
+    m_discoveredServices = false;
     m_foundGAService = false;
     m_foundBatteryLevelService = false;
     m_foundScanParamsService = false;
     m_foundHIDService = false;
     //m_foundHIDInformation = false;
     //m_foundProtocolMode = false;
-    m_foundHIDControlPoint = false;
+    m_foundHIDControlPointService = false;
 
 
     m_reconnect = true;
@@ -38,6 +39,8 @@ CaptoGloveAPI::CaptoGloveAPI(QObject *parent,  QString configPath) : QObject(par
     // Set up local to check states and connectivity often
     localDevice = new QBluetoothLocalDevice();
     localDevice->setHostMode(QBluetoothLocalDevice::HostDiscoverable);
+
+    connect(this,SIGNAL(servicesDiscovered()), this, SLOT(serviceScanDone()));
 }
 
 CaptoGloveAPI::~CaptoGloveAPI() {
@@ -136,7 +139,7 @@ void CaptoGloveAPI::initializeController(const QBluetoothDeviceInfo &info)
     connect(m_controller, &QLowEnergyController::serviceDiscovered,
             this, &CaptoGloveAPI::addLowEnergyService);
     connect(m_controller, &QLowEnergyController::discoveryFinished,
-            this, &CaptoGloveAPI::serviceScanDone);
+            this, &CaptoGloveAPI::discoverServices);
     }
 
     // Set remote address to random
@@ -182,29 +185,44 @@ void CaptoGloveAPI::serviceScanDone(){
     if (m_services.isEmpty())
         emit servicesUpdated();
 
-    if (m_foundBatteryLevelService)
+    if (m_foundBatteryLevelService){
         qDebug() << "Battery Level service found!";
         m_batteryLevelService = m_controller->createServiceObject(QBluetoothUuid::BatteryService);
-        m_batteryLevelService->discoverDetails();
-
-    if (m_batteryLevelService){
-        connect(m_batteryLevelService, &QLowEnergyService::stateChanged,  this, &CaptoGloveAPI::batteryServiceStateChanged);
+        connect(m_batteryLevelService, &QLowEnergyService::stateChanged, this, &CaptoGloveAPI::batteryServiceStateChanged);
         connect(m_batteryLevelService, &QLowEnergyService::characteristicChanged, this, &CaptoGloveAPI::updateBatteryLevelValue);
         connect(m_batteryLevelService, &QLowEnergyService::descriptorWritten, this, &CaptoGloveAPI::confirmedBatteryDescWrite);
-        connectToService("0x180f");
-    }else {
-        qDebug() << "Battery Level service not found.";
     }
-
+    if (m_batteryLevelService){
+        m_batteryLevelService->discoverDetails();
+    }
     if (m_foundGAService){
         m_GAService = m_controller->createServiceObject(QBluetoothUuid::GenericAccess);
-        m_GAService->discoverDetails();
+        connect(m_GAService, &QLowEnergyService::stateChanged, this, &CaptoGloveAPI::genericAccessServiceStateChanged);
     }
     if (m_GAService){
-        connectToService(QString(QBluetoothUuid::GenericAccess));
+        qDebug() << "Discovering GA details";
+        m_GAService->discoverDetails();
     }
 
-    processLoop();
+    if (m_foundScanParametersService){
+        m_ScanParametersService = m_controller->createServiceObject(QBluetoothUuid::ScanParameters);
+        connect(m_ScanParametersService, &QLowEnergyService::stateChanged, this, &CaptoGloveAPI::scanParamsServiceStateChanged);
+    }
+    if (m_ScanParametersService){
+        qDebug() << "Discovering Scan Parameters details";
+        m_ScanParametersService->discoverDetails();
+    }
+    if (m_foundHIDService){
+        m_HIDService = m_controller->createServiceObject(QBluetoothUuid::HumanInterfaceDeviceService);
+        connect(m_HIDService, &QLowEnergyService::stateChanged, this, &CaptoGloveAPI::HIDserviceStateChanged);
+    }
+    if (m_HIDService){
+        m_HIDService->discoverDetails();
+
+    }
+
+    //processLoop();
+
 
 }
 
@@ -270,9 +288,6 @@ void CaptoGloveAPI::connectToService(const QString &uuid)
         return;
     }
 
-    // ### NASTY ADDITION!
-    service->discoverDetails();
-
     // Discovery already done
     const QList<QLowEnergyCharacteristic> chars = service->characteristics();
     for (const QLowEnergyCharacteristic &ch : chars){
@@ -285,9 +300,34 @@ void CaptoGloveAPI::connectToService(const QString &uuid)
 
 }
 
+void CaptoGloveAPI::serviceDetailsDiscovered(QLowEnergyService::ServiceState newState)
+{
+    if (newState != QLowEnergyService::ServiceDiscovered) {
+        // do not hang in "Scanning for characteristics" mode forever
+        // in case the service discovery failed
+        if (newState != QLowEnergyService::DiscoveringServices){
+            QMetaObject::invokeMethod(this, "characteristicsUpdated",
+                                      Qt::QueuedConnection);
+        }
+        return;
+    }
+    auto service = qobject_cast<QLowEnergyService *>(sender());
+    if(!service)
+        return;
+
+    const QList<QLowEnergyCharacteristic> chars = service->characteristics();
+    for (const QLowEnergyCharacteristic &ch : chars){
+        auto cInfo = new CharacteristicInfo(ch);
+        m_characteristics.insert(service->serviceUuid(), cInfo);
+    }
+
+    emit characteristicsUpdated();
+}
+
 void CaptoGloveAPI::addLowEnergyService(const QBluetoothUuid &uuid)
 {
     QLowEnergyService *service = m_controller->createServiceObject(uuid);       // This part already creates service object in controller
+
     if (!service){
         qWarning() << "Cannot create service for uuid";
         return;
@@ -298,10 +338,6 @@ void CaptoGloveAPI::addLowEnergyService(const QBluetoothUuid &uuid)
 
     if(!service)
         return;
-
-    qDeleteAll(m_characteristics);
-    m_characteristics.clear();
-    emit characteristicsUpdated();
 
     checkServiceStatus(uuid);
 
@@ -333,62 +369,80 @@ void CaptoGloveAPI::checkServiceStatus(const QBluetoothUuid &uuid)
         m_foundHIDService = true;
     }
 
-    if (uuid == QBluetoothUuid(QBluetoothUuid::HIDControlPoint) && !m_foundHIDControlPoint)
+    if (uuid == QBluetoothUuid(QBluetoothUuid::HIDControlPoint) && !m_foundHIDControlPointService)
     {
         qDebug() << "Found HID Control Point.";
-        m_foundHIDControlPoint = true;
+        m_foundHIDControlPointService = true;
     }
+
+
 
 }
 
-void CaptoGloveAPI::serviceDetailsDiscovered(QLowEnergyService::ServiceState newState)
+void CaptoGloveAPI::serviceStateChanged(QLowEnergyService::ServiceState s)
 {
-    if (newState != QLowEnergyService::ServiceDiscovered) {
-        // do not hang in "Scanning for characteristics" mode forever
-        // in case the service discovery failed
-        if (newState != QLowEnergyService::DiscoveringServices){
-            QMetaObject::invokeMethod(this, "characteristicsUpdated",
-                                      Qt::QueuedConnection);
+    qDebug() << "Discovering  GA details in state: " << s ;
+    switch(s){
+    case QLowEnergyService::DiscoveringServices:
+    {
+        qDebug() << "Discovering services...";
+        break;
+
+
+    }
+    case QLowEnergyService::ServiceDiscovered:
+    {
+            const QList<QLowEnergyCharacteristic> chars = m_batteryLevelService->characteristics();
+            for (const QLowEnergyCharacteristic &ch : chars){
+                auto cInfo = new CharacteristicInfo(ch);
+                m_characteristics.insert(m_batteryLevelService->serviceUuid(), cInfo);
+                qDebug() << "Characteristic uuid is: " << cInfo->getUuid();
+                qDebug() << "Characteristic name is: " << cInfo->getName();
+
         }
-        return;
-    }
-    auto service = qobject_cast<QLowEnergyService *>(sender());
-    if(!service)
-        return;
-
-    const QList<QLowEnergyCharacteristic> chars = service->characteristics();
-    for (const QLowEnergyCharacteristic &ch : chars){
-        auto cInfo = new CharacteristicInfo(ch);
-        m_characteristics.insert(service->serviceUuid(), cInfo);
     }
 
-    emit characteristicsUpdated();
+    default:
+        qDebug() << "Not wanted  state!";
+
+    emit aliveChanged();
+    }
 }
 
 // BATTERY SERVICE
 void CaptoGloveAPI::batteryServiceStateChanged(QLowEnergyService::ServiceState s)
 {
+    qDebug() << "Discovering Battery details in state: " << s ;
     switch(s){
     case QLowEnergyService::DiscoveringServices:
+    {
         qDebug() << "Discovering services...";
         break;
 
+    }
     case QLowEnergyService::ServiceDiscovered:
     {
-
-        qInfo() << "Battery Service changed!";
-
-        const QLowEnergyCharacteristic batteryLevelChar = m_batteryLevelService->characteristic(QBluetoothUuid(QBluetoothUuid::BatteryLevel));
-        if (!batteryLevelChar.isValid()) {
-            qDebug("Battery level data not found.");
-            break;
+        const QList<QLowEnergyCharacteristic> chars = m_batteryLevelService->characteristics();
+        for (const QLowEnergyCharacteristic &ch : chars){
+            auto cInfo = new CharacteristicInfo(ch);
+            m_characteristics.insert(m_batteryLevelService->serviceUuid(), cInfo);
+            qDebug() << "Characteristic uuid is: " << cInfo->getUuid();
+            qDebug() << "Characteristic name is: " << cInfo->getName();
         }
-        m_batteryNotificationDesc = batteryLevelChar.descriptor(QBluetoothUuid::ClientCharacteristicConfiguration);
 
-        if (m_batteryNotificationDesc.isValid())
-            qDebug() << "Writing battery level notifications";
-            m_batteryLevelService->writeDescriptor(m_batteryNotificationDesc, QByteArray::fromHex("0100"));
-        break;
+
+        if (!chars.empty())
+        {
+            const QLowEnergyCharacteristic batteryLevelChar = m_batteryLevelService->characteristic(QBluetoothUuid::BatteryLevel);
+            if (!batteryLevelChar.isValid()) {
+                qDebug("Battery level data not found.");
+                break;
+            }else{
+                m_batteryLevelService->readCharacteristic(batteryLevelChar);
+                qDebug() << "Current battery level: " << batteryLevelChar.value().toHex();
+            }
+        }
+
 
     }
     default:
@@ -452,6 +506,129 @@ void CaptoGloveAPI::readBatteryLevel()
 
 }
 
+// SCAN PARAMS SERVICE
+void CaptoGloveAPI::scanParamsServiceStateChanged(QLowEnergyService::ServiceState s)
+{
+    qDebug() << "Discovering scan parameters details in state: " << s ;
+    switch(s){
+    case QLowEnergyService::DiscoveringServices:
+    {
+        qDebug() << "Discovering services...";
+        break;
+
+    }
+    case QLowEnergyService::ServiceDiscovered:
+    {
+        const QList<QLowEnergyCharacteristic> chars = m_ScanParametersService->characteristics();
+        for (const QLowEnergyCharacteristic &ch : chars){
+            auto cInfo = new CharacteristicInfo(ch);
+            m_characteristics.insert(m_batteryLevelService->serviceUuid(), cInfo);
+            qDebug() << "Characteristic uuid is: " << cInfo->getUuid();
+            qDebug() << "Characteristic name is: " << cInfo->getName();
+        }
+
+
+        if (!chars.empty())
+        {
+            const QLowEnergyCharacteristic scanIntervalLevelChar = m_ScanParametersService->characteristic(QBluetoothUuid::ScanIntervalWindow);
+            if (!scanIntervalLevelChar.isValid()) {
+                qDebug("scan Interval data not found.");
+                break;
+            }else{
+                m_ScanParametersService->readCharacteristic(scanIntervalLevelChar);
+                qDebug() << "Current battery level: " << scanIntervalLevelChar.value().toHex();
+            }
+        }
+
+
+    }
+    default:
+        // nothing for now
+        break;
+    }
+
+    emit aliveChanged();
+
+}
+
+// GA SERVICE
+void CaptoGloveAPI::genericAccessServiceStateChanged(QLowEnergyService::ServiceState s)
+{
+    switch(s){
+    case QLowEnergyService::DiscoveringServices:
+    {
+        qDebug() << "Discovering services...";
+        break;
+
+    }
+    case QLowEnergyService::ServiceDiscovered:
+    {
+        const QList<QLowEnergyCharacteristic> chars = m_GAService->characteristics();
+        for (const QLowEnergyCharacteristic &ch : chars){
+            auto cInfo = new CharacteristicInfo(ch);
+            m_characteristics.insert(m_GAService->serviceUuid(), cInfo);
+            qDebug() << "Characteristic uuid is: " << cInfo->getUuid();
+            qDebug() << "Characteristic name is: " << cInfo->getName();
+        }
+
+
+        if (!chars.empty())
+        {
+            const QLowEnergyCharacteristic m_deviceNameChar = m_GAService->characteristic(QBluetoothUuid::DeviceName);
+            const QLowEnergyCharacteristic m_deviceAppereance = m_GAService->characteristic(QBluetoothUuid::Appearance);
+            const QLowEnergyCharacteristic m_devicePreferredConnectionParams = m_GAService->characteristic(QBluetoothUuid::PeripheralPreferredConnectionParameters);
+            if (!m_deviceNameChar.isValid()) {
+                qDebug("Battery level data not found.");
+                break;
+            }else{
+                m_GAService->readCharacteristic(m_deviceNameChar);
+                qDebug() << "Device name is: " << m_deviceNameChar.value().data();
+            }
+        }
+
+
+    }
+}
+}
+
+// HID SERVICE STATE CHANGE
+void CaptoGloveAPI::HIDserviceStateChanged(QLowEnergyService::ServiceState s)
+{
+    qDebug() << "Discovering scan parameters details in state: " << s ;
+    switch(s){
+    case QLowEnergyService::DiscoveringServices:
+    {
+        qDebug() << "Discovering services...";
+        break;
+
+    }
+    case QLowEnergyService::ServiceDiscovered:
+    {
+        const QList<QLowEnergyCharacteristic> chars = m_HIDService->characteristics();
+        for (const QLowEnergyCharacteristic &ch : chars){
+            auto cInfo = new CharacteristicInfo(ch);
+            m_characteristics.insert(m_HIDService->serviceUuid(), cInfo);
+            qDebug() << "Characteristic uuid is: " << cInfo->getUuid();
+            qDebug() << "Characteristic name is: " << cInfo->getName();
+        }
+
+
+        if (!chars.empty())
+        {
+            qDebug() << "Found HID characteristics!";
+            }
+        }
+    default:
+        // nothing for now
+        break;
+    }
+
+
+    emit aliveChanged();
+
+}
+
+
 // ############## FUNCTIONAL ##############
 void CaptoGloveAPI::start(){
 
@@ -478,14 +655,19 @@ void CaptoGloveAPI::start(){
     // Start Service discovery
     scanServices(m_peripheralDevice); // TODO: Maybe break controller initialization and scanning for services in two method calls
 
-
 }
 
 void CaptoGloveAPI::processLoop(){
+
     while(true)
     {
         QThread::msleep(1000);
-        readBatteryLevel();
+        qDebug() << "Current battery services state is" << m_batteryLevelService->state();
+        if ((m_batteryLevelService->state() == QLowEnergyService::ServiceDiscovered)){
+            readBatteryLevel();
+        }else{
+            m_batteryLevelService->discoverDetails();
+        }
     }
 }
 
@@ -493,6 +675,38 @@ void CaptoGloveAPI::setUpdate(const QString &message)
 {
     m_message = message;
     emit updateChanged();
+}
+
+void CaptoGloveAPI::discoverServices()
+{
+
+    QList<bool> discoveredList;
+    ServiceInfo *srvPtr;
+        foreach(srvPtr, m_services)
+        {
+            QLowEnergyService* serv = srvPtr->service();
+            QBluetoothUuid uuid = QBluetoothUuid(srvPtr->getUuid());
+            if(serv->state() != QLowEnergyService::ServiceDiscovered){
+                discoveredList.append(false);
+                serv->discoverDetails();
+            }
+
+            else{
+                m_controller->createServiceObject(uuid);
+                discoveredList.append(true);
+            }
+        }
+
+        if(!discoveredList.contains(false)){
+            m_discoveredServices = false;
+            discoverServices();
+        }
+        else{
+            qDebug() << "Discovered all found services!";
+            m_discoveredServices = true;
+            emit servicesDiscovered();
+        }
+
 }
 
 
@@ -535,6 +749,27 @@ QVariant CaptoGloveAPI::getServices(){
 QVariant CaptoGloveAPI::getCharacteristics(){
 
     return QVariant::fromValue(m_characteristics);
+}
+
+int CaptoGloveAPI::getBatteryLevel()
+{
+
+    if (m_foundBatteryLevelService){
+        if (m_batteryLevelService && m_batteryLevelService->state() == QLowEnergyService::LocalService)
+        {
+            if (!m_batteryLevelService->characteristics().empty())
+            {
+                QLowEnergyCharacteristic blChar = m_batteryLevelService->characteristics().at(0);
+                m_batteryLevelService->readCharacteristic(blChar);
+                int BatteryLevel = 0;
+                blChar.value().toHex().setNum(BatteryLevel, 16);
+                return BatteryLevel;
+            }
+        }
+    }
+
+    return 0;
+
 }
 
 bool CaptoGloveAPI::isRandomAddress() const
