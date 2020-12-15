@@ -118,6 +118,8 @@ private:
 
     void genericAccessServiceStateChanged(QLowEnergyService::ServiceState s);
 
+    void fingerPoseServiceStateChanged(QLowEnergyService::ServiceState s);
+
     // General
     void readInitialValue(QLowEnergyService &service);
 
@@ -145,7 +147,6 @@ private:
     bool m_randomAdress;
     bool m_foundGAService;
     bool m_foundBatteryLevelService;
-    bool m_foundScanParamsService;
     bool m_foundHIDService;
     bool m_foundHIDControlPointService;
     bool m_foundScanParametersService;
