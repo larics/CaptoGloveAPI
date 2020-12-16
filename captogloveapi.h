@@ -43,6 +43,7 @@ public:
 
     // Service Getters
     int getBatteryLevel();                                                                  // xx
+    QByteArray getFingers();                                                            //
 
     QString getUpdate();                                                                    // xx
     bool alive() const;
@@ -56,7 +57,6 @@ public:
     void initializeController (const QBluetoothDeviceInfo &info);                           // xx, TODO: Initialize controller
 
     void start();                                                                           // init, TEST method
-    void processLoop();                                                                     // TODO: implement
     void discoverServices();
 
 
@@ -83,6 +83,7 @@ private slots:
 
     // QLowEnergyService related
     void serviceDetailsDiscovered(QLowEnergyService::ServiceState newState);
+    void processLoop();
 
 Q_SIGNALS:
     void devicesUpdated();
@@ -93,6 +94,7 @@ Q_SIGNALS:
     void disconnected();
     void aliveChanged();
     void servicesDiscovered();
+    void initialized();
 
 private:
     // QLowEnergyController
@@ -119,6 +121,9 @@ private:
     void genericAccessServiceStateChanged(QLowEnergyService::ServiceState s);
 
     void fingerPoseServiceStateChanged(QLowEnergyService::ServiceState s);
+
+    void fingerPoseCharacteristicChanged(const QLowEnergyCharacteristic &c,
+                                         const QByteArray &value);
 
     // General
     void readInitialValue(QLowEnergyService &service);
@@ -163,6 +168,10 @@ private:
     QLowEnergyService *m_ScanParametersService = nullptr;
     QLowEnergyService *m_DeviceInfoService = nullptr;
     QLowEnergyService *m_FingerPositionsService = nullptr;
+
+    // Global characteristics
+
+    QLowEnergyCharacteristic m_fingerPositionsChar;
 
     // Characteristics
     QLowEnergyDescriptor m_batteryNotificationDesc;
