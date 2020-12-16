@@ -43,7 +43,8 @@ public:
 
     // Service Getters
     int getBatteryLevel();                                                                  // xx
-    QByteArray getFingers();                                                            //
+    QString getDeviceName();                                                                // xx
+    QByteArray getCurrentFingerPosition();                                                  // xx
 
     QString getUpdate();                                                                    // xx
     bool alive() const;
@@ -135,8 +136,8 @@ private:
     void refreshStates();
 
     void setUpdate(const QString &message);
-    void getDeviceName();
     int readBatteryLevel();
+    QByteArray getFingers();
     void getScanParams();
 
     QString m_configPath;
@@ -174,7 +175,6 @@ private:
     QLowEnergyService *m_FingerPositionsService = nullptr;
 
     // Global characteristics
-
     QLowEnergyCharacteristic m_fingerPositionsChar;
 
     // Characteristics
@@ -187,6 +187,8 @@ private:
 
     // Values of interest for getter
     int m_batteryLevelValue;
+    QByteArray m_currentFingerPosition;
+    QString m_deviceName;
 };
 
 #endif // CAPTOGLOVEAPI_H

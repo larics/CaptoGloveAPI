@@ -12,6 +12,8 @@ DEFINES += LINUX
 
 DEFINES += PROJECT_PATH=\"\\\"$${_PRO_FILE_PWD_}/\\\"\"
 
+DEFINES += QT_NO_DEBUG_OUTPUT
+
 
 SOURCES = main.cpp \
           captogloveapi.cpp \

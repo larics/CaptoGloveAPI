@@ -607,6 +607,7 @@ void CaptoGloveAPI::genericAccessServiceStateChanged(QLowEnergyService::ServiceS
                 break;
             }else{
                 m_GAService->readCharacteristic(m_deviceNameChar);
+                m_deviceName = m_deviceNameChar.value().data();
                 qDebug() << "Device name is: " << m_deviceNameChar.value().data();
             }
         }
@@ -708,12 +709,11 @@ void CaptoGloveAPI::fingerPoseServiceStateChanged(QLowEnergyService::ServiceStat
 
 void CaptoGloveAPI::fingerPoseCharacteristicChanged(const QLowEnergyCharacteristic &c, const QByteArray &value){
 
-
-    qDebug() << "Characteristic " << c.uuid() << "changed!";
-
+    // Read current characteristic value
     m_FingerPositionsService->readCharacteristic(c);
 
-    qDebug() << "Readed value: " << c.value();
+    // Set current finger value
+    m_currentFingerPosition = c.value();
 
     if (c.uuid() == QBluetoothUuid(QString("000f001-3333-acda-0000-ff522ee73921")))
     {
@@ -911,18 +911,23 @@ QVariant CaptoGloveAPI::getCharacteristics(){
     return QVariant::fromValue(m_characteristics);
 }
 
-/**bool CaptoGloveAPI::enableFingersMovement(){
-    if(!m_foundFingerPositionService && m_FingerPositionsService){
-        if m_FingerPositionsService.state() != QLowEnergyService::
-    }
-}
-**/
+
 
 int CaptoGloveAPI::getBatteryLevel()
 {
 
     return m_batteryLevelValue;
 
+}
+
+QByteArray CaptoGloveAPI::getCurrentFingerPosition()
+{
+    return m_currentFingerPosition;
+}
+
+QString CaptoGloveAPI::getDeviceName()
+{
+    return m_deviceName;
 }
 
 bool CaptoGloveAPI::isRandomAddress() const
