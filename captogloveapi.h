@@ -85,6 +85,7 @@ private slots:
     void serviceDetailsDiscovered(QLowEnergyService::ServiceState newState);
     void processLoop();
 
+
 Q_SIGNALS:
     void devicesUpdated();
     void servicesUpdated();
@@ -95,6 +96,7 @@ Q_SIGNALS:
     void aliveChanged();
     void servicesDiscovered();
     void initialized();
+    void testSignal();
 
 private:
     // QLowEnergyController
@@ -124,6 +126,8 @@ private:
 
     void fingerPoseCharacteristicChanged(const QLowEnergyCharacteristic &c,
                                          const QByteArray &value);
+    void confirmedDescriptorWrite(const QLowEnergyDescriptor &d,
+                                  const QByteArray &value);
 
     // General
     void readInitialValue(QLowEnergyService &service);
