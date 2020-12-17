@@ -1,13 +1,13 @@
 QT += core bluetooth
 QT -= gui
 
-CONFIG += c+11
-CONFIG += qt
-
 # For final version without debug
 # CONFIG += CAPTOGLOVEAPI_LIBRARY
 # DEFINES += QT_NO_DEBUG_OUTPUT
 
+
+CONFIG += c+11
+CONFIG += qt
 
 TARGET = CaptoGloveAPI
 
@@ -25,8 +25,6 @@ CONFIG += console
 DEFINES += LINUX
 
 DEFINES += PROJECT_PATH=\"\\\"$${_PRO_FILE_PWD_}/\\\"\"
-
-
 
 SOURCES = captogloveapi.cpp\
           deviceinfo.cpp \
@@ -57,11 +55,14 @@ for(p, $$list($$files($${PROTO_DECL_PATH}\*.proto))){
     HEADERS +=$$replace(PROTO_IMPL_FILE, .proto, .pb.h)
 }
 
-
 # Linking
 unix{
 
     LIBS += -pthread
+
+    # Include protobuf
+    LIBS += -L"$$PWD/../protobuf/build/" -lprotobuf
+
 
     #INCLUDEPATH += $$PWD/../CaptoGloveLib/
     #LIBS += -L$$PWD/../CaptoGloveLib -lGSdkCoreStatic
