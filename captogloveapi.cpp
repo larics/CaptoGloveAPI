@@ -736,12 +736,15 @@ void CaptoGloveAPI::fingerPoseCharacteristicChanged(const QLowEnergyCharacterist
     {
         qDebug() << "Characteristic f004 changed!";
     }
+
 }
 
 void CaptoGloveAPI::confirmedDescriptorWrite(const QLowEnergyDescriptor &d, const QByteArray &value){
 
     qDebug() << "Written descriptor!!!";
 }
+
+
 // ############## FUNCTIONAL ##############
 void CaptoGloveAPI::start(){
 
@@ -778,7 +781,7 @@ void CaptoGloveAPI::start(){
 
 }
 
-// SWAP processLoop with measuring change!
+// SWAP processLoop with measuring change! --> redundant with good signals and slot logic!
 void CaptoGloveAPI::processLoop(){
 
     qDebug() << "Entered process loop!";
@@ -895,6 +898,7 @@ void CaptoGloveAPI::loadSettings(QString path){
     //m_controlSystem->readParameters(&Setting);
 }
 
+
 // ############## GETTERS ##############
 QVariant CaptoGloveAPI::getDevices(){
 
@@ -910,8 +914,6 @@ QVariant CaptoGloveAPI::getCharacteristics(){
 
     return QVariant::fromValue(m_characteristics);
 }
-
-
 
 int CaptoGloveAPI::getBatteryLevel()
 {
@@ -935,6 +937,7 @@ bool CaptoGloveAPI::isRandomAddress() const
     return m_randomAdress;
 }
 
+// THINK OF STATES FOR CAPTOGLOVE
 bool CaptoGloveAPI::state()
 {
     return m_deviceScanState;

@@ -40,8 +40,8 @@ following [link](https://code.qt.io/cgit/qt/qtconnectivity.git/tree/examples/blu
 - [x] Scan services 
 - [x] Check how to discover characteristics
 - [x] Read battery value
-- [ ] Scan characteristics 
-- [ ] Check for updates of certain characteristsics/services
+- [x] Scan characteristics 
+- [x] Check for updates of certain characteristsics/services
+- [ ] Add specific methods for reading needed characteristic
 - [ ] Add Logger as Singleton 
-- [ ] Add specific methods for reading needed characteristic 
 - [ ] Add protobuffer messages to enable writing in them
