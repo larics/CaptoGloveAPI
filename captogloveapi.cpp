@@ -39,6 +39,10 @@ CaptoGloveAPI::CaptoGloveAPI(QObject *parent,  QString configPath) : QObject(par
     connect(this,SIGNAL(servicesDiscovered()), this, SLOT(serviceScanDone()));
 
     connect(this, SIGNAL(initialized()), this, SLOT(processLoop()));
+
+    // Update corresponding protobuffer msgs
+    connect(this, SIGNAL(updateFingerState()), this, SLOT(setFingerMsg()));
+    connect(this, SIGNAL(updateBatteryState()), this, SLOT(setBatteryMsg()));
 }
 
 CaptoGloveAPI::~CaptoGloveAPI() {
@@ -266,9 +270,11 @@ void CaptoGloveAPI::scanServices(DeviceInfo &device)        // TODO: Check why w
 
     if (m_controller)
     {
+
         m_controller->disconnectFromDevice();
         delete m_controller;
         m_controller = nullptr;
+
     }
 
     if (!m_controller)
@@ -486,6 +492,7 @@ void CaptoGloveAPI::batteryServiceStateChanged(QLowEnergyService::ServiceState s
 
 void CaptoGloveAPI::updateBatteryLevelValue(const QLowEnergyCharacteristic &c, const QByteArray &value  )
 {
+
     // ignore any other characteristic change -> shouldn't really happen though
     if (c.uuid() != QBluetoothUuid(QBluetoothUuid::BatteryLevel))
         return;
@@ -715,6 +722,8 @@ void CaptoGloveAPI::fingerPoseCharacteristicChanged(const QLowEnergyCharacterist
     // Set current finger value
     m_currentFingerPosition = c.value();
 
+    qDebug() << "Fingers value is: " << m_currentFingerPosition;
+
     if (c.uuid() == QBluetoothUuid(QString("000f001-3333-acda-0000-ff522ee73921")))
     {
         qDebug() << "Characteristic f001 changed!" ;
@@ -737,6 +746,8 @@ void CaptoGloveAPI::fingerPoseCharacteristicChanged(const QLowEnergyCharacterist
         qDebug() << "Characteristic f004 changed!";
     }
 
+    emit updateFingerState();
+
 }
 
 void CaptoGloveAPI::confirmedDescriptorWrite(const QLowEnergyDescriptor &d, const QByteArray &value){
@@ -744,7 +755,22 @@ void CaptoGloveAPI::confirmedDescriptorWrite(const QLowEnergyDescriptor &d, cons
     qDebug() << "Written descriptor!!!";
 }
 
+void CaptoGloveAPI::setFingerMsg()
+{
 
+    // TODO: transform to valid datta format currentFingerPosition
+    m_fingerFeedbackMsg.set_thumb_finger(m_currentFingerPosition.at(0));
+    m_fingerFeedbackMsg.set_index_finger(m_currentFingerPosition.at(1));
+    m_fingerFeedbackMsg.set_middle_finger(m_currentFingerPosition.at(2));
+    m_fingerFeedbackMsg.set_ring_finger(m_currentFingerPosition.at(4));
+    m_fingerFeedbackMsg.set_thumb_finger(m_currentFingerPosition.at(5));
+
+}
+
+void CaptoGloveAPI::setBatteryMsg()
+{
+    m_batteryMsg.set_level(m_batteryLevelValue);
+}
 // ############## FUNCTIONAL ##############
 void CaptoGloveAPI::start(){
 
@@ -764,6 +790,7 @@ void CaptoGloveAPI::start(){
             m_peripheralDevice.setDevice(m_devicePtr->getDevice());
             break;
         }else{
+
             qDebug() << "Wanted Peripheral is not found!";
             // TODO: Add error handling if device hasn't been found
         }

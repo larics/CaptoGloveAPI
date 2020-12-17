@@ -22,6 +22,8 @@
 #include <QtEndian>
 #include <QThread>
 
+// Include protobuffer msg?
+#include <proto_impl/captoglove_v1.pb.h>
 
 class CaptoGloveAPI : public QObject
 {
@@ -86,6 +88,9 @@ private slots:
     void serviceDetailsDiscovered(QLowEnergyService::ServiceState newState);
     void processLoop();
 
+    void setFingerMsg();
+    void setBatteryMsg();
+
 
 Q_SIGNALS:
     void devicesUpdated();
@@ -98,6 +103,8 @@ Q_SIGNALS:
     void servicesDiscovered();
     void initialized();
     void testSignal();
+    void updateFingerState();
+    void updateBatteryState();
 
 private:
     // QLowEnergyController
@@ -130,6 +137,7 @@ private:
     void confirmedDescriptorWrite(const QLowEnergyDescriptor &d,
                                   const QByteArray &value);
 
+
     // General
     void readInitialValue(QLowEnergyService &service);
 
@@ -145,7 +153,7 @@ private:
     QBluetoothDeviceDiscoveryAgent *m_discoveryAgent;
     QBluetoothLocalDevice *localDevice;
 
-    QLowEnergyController* m_controller;
+    QLowEnergyController* m_controller = nullptr;
     QList<DeviceInfo *> m_devices;
     QList<QBluetoothDeviceInfo> m_devicesBTInfo;
     QList<ServiceInfo *> m_services;
@@ -189,6 +197,11 @@ private:
     int m_batteryLevelValue;
     QByteArray m_currentFingerPosition;
     QString m_deviceName;
+
+    captoglove_v1::BatteryLevelMsg m_batteryMsg;
+    captoglove_v1::DeviceInformationMsg m_deviceInformationMsg;
+    captoglove_v1::FingerFeedbackMsg m_fingerFeedbackMsg;
+
 };
 
 #endif // CAPTOGLOVEAPI_H
