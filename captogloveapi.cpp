@@ -64,6 +64,8 @@ void CaptoGloveAPI::startDeviceDiscovery()
     if (m_discoveryAgent->isActive()) {
         m_deviceScanState = true;
         Q_EMIT stateChanged();
+    }else{
+        qDebug() << "Discovery agent failed to start!";
     }
 }
 
@@ -797,6 +799,7 @@ void CaptoGloveAPI::startConnection(){
 }
 
 void CaptoGloveAPI::run(){
+    qDebug() << "Starting device discovery";
     startDeviceDiscovery();
 }
 // SWAP processLoop with measuring change! --> redundant with good signals and slot logic!
