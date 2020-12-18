@@ -42,6 +42,6 @@ following [link](https://code.qt.io/cgit/qt/qtconnectivity.git/tree/examples/blu
 - [x] Read battery value
 - [x] Scan characteristics 
 - [x] Check for updates of certain characteristsics/services
-- [ ] Add specific methods for reading needed characteristic
-- [ ] Add Logger as Singleton 
+- [ ] Add Logger / Needed for ROS 
+- [ ] Refactor code 
 - [ ] Add protobuffer messages to enable writing in them

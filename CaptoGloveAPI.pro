@@ -28,12 +28,14 @@ DEFINES += PROJECT_PATH=\"\\\"$${_PRO_FILE_PWD_}/\\\"\"
 
 SOURCES = captogloveapi.cpp\
           deviceinfo.cpp \
+          logger.cpp \
           serviceinfo.cpp \
           characteristicinfo.cpp \
           main.cpp
 
 HEADERS = captogloveapi.h \
           deviceinfo.h \
+          logger.h \
           serviceinfo.h \
           characteristicinfo.h
 
