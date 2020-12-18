@@ -39,18 +39,17 @@ HEADERS = captogloveapi.h \
 
 # Protobuffer compiler
 message("Generating protocol buffer classes from .proto files.")
+message("Protoc version:" $$VERSION)
 
 PROTO_DECL_PATH = protobuffers
 PROTO_IMPL_PATH = proto_impl
 
 system(mkdir proto_impl)
-
 for(p, $$list($$files($${PROTO_DECL_PATH}\*.proto))){
     message("Generating protobuffer:" $$basename(p))
     VERSION = $$system("protoc --version")
-    message("Protoc version:" $$VERSION)
     system(protoc --cpp_out=$${PROTO_IMPL_PATH} --proto_path=$${PROTO_DECL_PATH} $$basename(p))
-    PROTO_IMPL_FILE = $${PROTO_IMPL_PATH}\\$$basename(p)
+    PROTO_IMPL_FILE = $${PROTO_IMPL_PATH}/$$basename(p)
     SOURCES +=$$replace(PROTO_IMPL_FILE, .proto, .pb.cc)
     HEADERS +=$$replace(PROTO_IMPL_FILE, .proto, .pb.h)
 }
@@ -62,10 +61,6 @@ unix{
 
     # Include protobuf
     LIBS += -L"$$PWD/../protobuf/build/" -lprotobuf
-
-
-    #INCLUDEPATH += $$PWD/../CaptoGloveLib/
-    #LIBS += -L$$PWD/../CaptoGloveLib -lGSdkCoreStatic
 
 }
 
