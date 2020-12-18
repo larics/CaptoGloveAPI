@@ -89,8 +89,8 @@ private slots:
     void serviceDetailsDiscovered(QLowEnergyService::ServiceState newState);
     void processLoop();
 
-    void setFingerMsg();
-    void setBatteryMsg();
+    captoglove_v1::FingerFeedbackMsg setFingerMsg();
+    captoglove_v1::BatteryLevelMsg setBatteryMsg();
 
 
 Q_SIGNALS:
@@ -104,7 +104,7 @@ Q_SIGNALS:
     void servicesDiscovered();
     void initialized();
     void testSignal();
-    void updateFingerState();
+    void updateFingerState(captoglove_v1::FingerFeedbackMsg);
     void updateBatteryState();
 
 private:

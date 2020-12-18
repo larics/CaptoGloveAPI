@@ -60,7 +60,7 @@ unix{
     LIBS += -pthread
 
     # Include protobuf
-    LIBS += -L"$$PWD/../protobuf/build/" -lprotobuf
+    LIBS += -L"$$/home/filip/protobuf/build/" -lprotobuf
 
 }
 

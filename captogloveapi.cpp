@@ -43,8 +43,8 @@ CaptoGloveAPI::CaptoGloveAPI(QObject *parent,  QString configPath) : QObject(par
     connect(this, SIGNAL(initialized()), this, SLOT(processLoop()));
 
     // Update corresponding protobuffer msgs
-    connect(this, SIGNAL(updateFingerState()), this, SLOT(setFingerMsg()));
-    connect(this, SIGNAL(updateBatteryState()), this, SLOT(setBatteryMsg()));
+    // connect(this, SIGNAL(updateFingerState()), this, SLOT(setFingerMsg()));
+    // connect(this, SIGNAL(updateBatteryState()), this, SLOT(setBatteryMsg()));
 }
 
 CaptoGloveAPI::~CaptoGloveAPI() {
@@ -65,7 +65,7 @@ void CaptoGloveAPI::startDeviceDiscovery()
         m_deviceScanState = true;
         Q_EMIT stateChanged();
     }else{
-        qDebug() << "Discovery agent failed to start!";
+        qDebug() << "Discovery agent failed to start:" << m_discoveryAgent->errorString();
     }
 }
 
@@ -736,7 +736,8 @@ void CaptoGloveAPI::fingerPoseCharacteristicChanged(const QLowEnergyCharacterist
         qDebug() << "Characteristic f004 changed!";
     }
 
-    emit updateFingerState();
+
+    emit updateFingerState(setFingerMsg());
 
 }
 
@@ -745,21 +746,25 @@ void CaptoGloveAPI::confirmedDescriptorWrite(const QLowEnergyDescriptor &d, cons
     qDebug() << "Written descriptor!!!";
 }
 
-void CaptoGloveAPI::setFingerMsg()
+captoglove_v1::FingerFeedbackMsg CaptoGloveAPI::setFingerMsg()
 {
 
     // TODO: transform to valid datta format currentFingerPosition
     m_fingerFeedbackMsg.set_thumb_finger(m_currentFingerPosition.at(0));
-    m_fingerFeedbackMsg.set_index_finger(m_currentFingerPosition.at(1));
-    m_fingerFeedbackMsg.set_middle_finger(m_currentFingerPosition.at(2));
-    m_fingerFeedbackMsg.set_ring_finger(m_currentFingerPosition.at(4));
-    m_fingerFeedbackMsg.set_thumb_finger(m_currentFingerPosition.at(5));
+    m_fingerFeedbackMsg.set_index_finger(m_currentFingerPosition.at(2));
+    m_fingerFeedbackMsg.set_middle_finger(m_currentFingerPosition.at(4));
+    m_fingerFeedbackMsg.set_ring_finger(m_currentFingerPosition.at(6));
+    m_fingerFeedbackMsg.set_thumb_finger(m_currentFingerPosition.at(8));
+
+    return m_fingerFeedbackMsg;
 
 }
 
-void CaptoGloveAPI::setBatteryMsg()
+captoglove_v1::BatteryLevelMsg CaptoGloveAPI::setBatteryMsg()
 {
     m_batteryMsg.set_level(m_batteryLevelValue);
+
+    return m_batteryMsg;
 }
 // ############## FUNCTIONAL ##############
 void CaptoGloveAPI::startConnection(){
@@ -900,7 +905,7 @@ void CaptoGloveAPI::saveSettings(QString path){
 
     QSettings Setting(path, QSettings::IniFormat);
 
-    //Setting.beginGroup("BluetoothParams");
+    Setting.beginGroup("BluetoothParams");
     //Logger::instance()->writeParameters(&Setting);
     //Setting.endGroup();
 
@@ -918,6 +923,7 @@ void CaptoGloveAPI::loadSettings(QString path){
 
     //m_controlSystem->readParameters(&Setting);
 }
+
 
 
 // ############## GETTERS ##############
