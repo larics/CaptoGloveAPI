@@ -59,7 +59,8 @@ public:
 
     void initializeController (const QBluetoothDeviceInfo &info);                           // xx, TODO: Initialize controller
 
-    void start();                                                                           // init, TEST method
+                                                                                            // init, TEST method
+    void run();
     void discoverServices();
 
 
@@ -67,6 +68,7 @@ public slots:
     void startDeviceDiscovery();                                                            // xx
     void scanServices(DeviceInfo &device);                          // xx
 
+    void startConnection();
 
     void connectToService(const QString &uuid);
     void disconnectFromDevice();
@@ -75,7 +77,6 @@ private slots:
     // QBluetoothDeviceDiscoveryAgent
     void addDevice(const QBluetoothDeviceInfo &device);                                     // xx
     void deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error);                      // xx
-    void deviceScanFinished();
 
     // QLowEnergyController related
     void addLowEnergyService (const QBluetoothUuid &uuid);                                  // xx

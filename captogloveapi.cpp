@@ -32,6 +32,8 @@ CaptoGloveAPI::CaptoGloveAPI(QObject *parent,  QString configPath) : QObject(par
             this, SLOT(addDevice(QBluetoothDeviceInfo))); // Same  as 3rd one
     connect(m_discoveryAgent, static_cast<void (QBluetoothDeviceDiscoveryAgent::*)(QBluetoothDeviceDiscoveryAgent::Error)>(&QBluetoothDeviceDiscoveryAgent::error),
                                                this, &CaptoGloveAPI::deviceScanError);
+    connect(m_discoveryAgent, SIGNAL(finished()), this, SLOT(startConnection()));
+
     // Set up local to check states and connectivity often
     localDevice = new QBluetoothLocalDevice();
     localDevice->setHostMode(QBluetoothLocalDevice::HostDiscoverable);
@@ -55,6 +57,7 @@ void CaptoGloveAPI::startDeviceDiscovery()
     qDeleteAll(m_devices);
     m_devices.clear();
     emit devicesUpdated();
+
 
     m_discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
 
@@ -82,22 +85,6 @@ void CaptoGloveAPI::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
     emit stateChanged();
 }
 
-void CaptoGloveAPI::deviceScanFinished()
-{
-    // Stop discovery agent
-    const QList<QBluetoothDeviceInfo> foundDevices = m_discoveryAgent->discoveredDevices();
-    for (auto nextDevice : foundDevices)
-        if (nextDevice.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)
-            m_devicesBTInfo.append(nextDevice);
-
-    emit devicesUpdated();
-    m_deviceScanState = false;
-    emit stateChanged();
-    if (m_devicesBTInfo.isEmpty())
-        setUpdate("No Low Energy devices found...");
-    else
-        setUpdate("Done! Scan Again!");
-}
 
 void CaptoGloveAPI::addDevice(const QBluetoothDeviceInfo &device){
 
@@ -108,6 +95,7 @@ void CaptoGloveAPI::addDevice(const QBluetoothDeviceInfo &device){
         qDebug() << "Device name:" << device.name();
         qDebug() << "Device address:" << device.address();
     }
+
 }
 
 void CaptoGloveAPI::disconnectFromDevice(){
@@ -772,11 +760,11 @@ void CaptoGloveAPI::setBatteryMsg()
     m_batteryMsg.set_level(m_batteryLevelValue);
 }
 // ############## FUNCTIONAL ##############
-void CaptoGloveAPI::start(){
+void CaptoGloveAPI::startConnection(){
 
 
 
-    startDeviceDiscovery();
+
     QString choosenDevice("CaptoGlove3148");
 
     DeviceInfo *m_devicePtr;
@@ -808,6 +796,9 @@ void CaptoGloveAPI::start(){
 
 }
 
+void CaptoGloveAPI::run(){
+    startDeviceDiscovery();
+}
 // SWAP processLoop with measuring change! --> redundant with good signals and slot logic!
 void CaptoGloveAPI::processLoop(){
 
