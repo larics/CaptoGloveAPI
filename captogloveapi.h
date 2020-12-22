@@ -62,7 +62,7 @@ public:
                                                                                             // init, TEST method
     void run();
     void discoverServices();
-    QByteArray getFingers();
+    bool getFingers();
 
 
 

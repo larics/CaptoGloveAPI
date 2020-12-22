@@ -832,7 +832,7 @@ void CaptoGloveAPI::processLoop(){
 
 }
 
-QByteArray CaptoGloveAPI::getFingers()
+bool CaptoGloveAPI::getFingers()
 {
     QLowEnergyCharacteristic m_fingerZero =  m_FingerPositionsService->characteristic(QBluetoothUuid(QString("0000f001-3333-acda-0000-ff522ee73921")));
     QLowEnergyCharacteristic m_fingerFirst = m_FingerPositionsService->characteristic(QBluetoothUuid(QString("0000f002-3333-acda-0000-ff522ee73921")));
@@ -857,7 +857,7 @@ QByteArray CaptoGloveAPI::getFingers()
     qDebug() << "m_fingerSecond" << m_fingerSecond.value();
     qDebug() << "m_fingerThird" << m_fingerThird.value();
 
-    return m_fingerSecond.value();
+    return m_foundFingerPositionService;
 }
 
 void CaptoGloveAPI::setUpdate(const QString &message)
