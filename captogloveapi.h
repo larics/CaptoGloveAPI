@@ -62,6 +62,8 @@ public:
                                                                                             // init, TEST method
     void run();
     void discoverServices();
+    QByteArray getFingers();
+
 
 
 public slots:
@@ -146,7 +148,6 @@ private:
 
     void setUpdate(const QString &message);
     int readBatteryLevel();
-    QByteArray getFingers();
     void getScanParams();
 
     QString m_configPath;
