@@ -14,6 +14,7 @@ CaptoGloveAPI::CaptoGloveAPI(QObject *parent,  QString configPath) : QObject(par
     m_foundHIDControlPointService = false;
 
     m_connected = false;
+    m_initialized = false;
 
 
     m_reconnect = true;
@@ -69,7 +70,7 @@ void CaptoGloveAPI::startDeviceDiscovery()
         m_deviceScanState = true;
         Q_EMIT stateChanged();
     }else{
-        Logger::instance() -> sendMessageToLog(QString(tr("Discovery agent failed to strat: %1").arg(m_discoveryAgent->errorString())));
+        Logger::instance() -> sendMessageToLog(QString(tr("Discovery agent failed to start: %1").arg(m_discoveryAgent->errorString())));
         //qDebug() << "Discovery agent failed to start:" << m_discoveryAgent->errorString();
     }
 }
@@ -693,6 +694,8 @@ void CaptoGloveAPI::fingerPoseServiceStateChanged(QLowEnergyService::ServiceStat
             QLowEnergyDescriptor desc = m_fingerSecond.descriptor(QBluetoothUuid::ClientCharacteristicConfiguration);
             m_FingerPositionsService->writeDescriptor(desc, QByteArray::fromHex("0100"));
 
+            m_initialized = true;
+
             emit initialized();
         }
         break;
@@ -983,3 +986,9 @@ bool CaptoGloveAPI::alive() const
 
     return false;
 }
+
+bool CaptoGloveAPI::getInit() const
+{
+    return m_initialized;
+}
+

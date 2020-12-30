@@ -66,6 +66,9 @@ public:
     void run();
     void discoverServices();
     bool getFingers();
+    bool getInit();
+
+    bool m_initialized;
 
 
 
