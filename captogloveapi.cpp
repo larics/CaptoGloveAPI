@@ -45,6 +45,10 @@ CaptoGloveAPI::CaptoGloveAPI(QObject *parent,  QString configPath) : QObject(par
     // Update corresponding protobuffer msgs
     // connect(this, SIGNAL(updateFingerState()), this, SLOT(setFingerMsg()));
     // connect(this, SIGNAL(updateBatteryState()), this, SLOT(setBatteryMsg()));
+
+    // Initialize logger
+    Logger::instance() -> start();
+
 }
 
 CaptoGloveAPI::~CaptoGloveAPI() {
@@ -65,7 +69,8 @@ void CaptoGloveAPI::startDeviceDiscovery()
         m_deviceScanState = true;
         Q_EMIT stateChanged();
     }else{
-        qDebug() << "Discovery agent failed to start:" << m_discoveryAgent->errorString();
+        Logger::instance() -> sendMessageToLog(QString(tr("Discovery agent failed to strat: %1").arg(m_discoveryAgent->errorString())));
+        //qDebug() << "Discovery agent failed to start:" << m_discoveryAgent->errorString();
     }
 }
 
@@ -94,6 +99,7 @@ void CaptoGloveAPI::addDevice(const QBluetoothDeviceInfo &device){
     // DeviceInfo foundDevice;
     if (device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration){
         m_devices.append(new DeviceInfo(device));
+
         qDebug() << "Device name:" << device.name();
         qDebug() << "Device address:" << device.address();
     }
@@ -149,7 +155,7 @@ void CaptoGloveAPI::initializeController(const QBluetoothDeviceInfo &info)
 // ############## LOW ENERGY CONTROLLER SLOTS ##############
 void CaptoGloveAPI::deviceConnected()
 {
-    qDebug() << "Device connected. Scanning services.";
+    Logger::instance()->sendMessageToLog("Device connected. Scanning services.");
     setUpdate("Back\n(Discovering services...)");
     m_connected = true;
     m_controller->discoverServices();

@@ -25,6 +25,9 @@
 // Include protobuffer msg?
 #include <proto_impl/captoglove_v1.pb.h>
 
+// Include Logger
+#include "logger.h"
+
 class CaptoGloveAPI : public QObject
 {
     Q_OBJECT
@@ -93,6 +96,8 @@ private slots:
 
     captoglove_v1::FingerFeedbackMsg setFingerMsg();
     captoglove_v1::BatteryLevelMsg setBatteryMsg();
+
+
 
 
 Q_SIGNALS:
