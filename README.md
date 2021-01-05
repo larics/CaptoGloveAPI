@@ -42,6 +42,9 @@ following [link](https://code.qt.io/cgit/qt/qtconnectivity.git/tree/examples/blu
 - [x] Read battery value
 - [x] Scan characteristics 
 - [x] Check for updates of certain characteristsics/services
-- [ ] Add Logger / Needed for ROS 
+- [x] Add Logger / Needed for ROS
+- [ ] Check Logger functionality based on signals 
+- [ ] Map all signals and slots 
 - [ ] Refactor code 
+- [ ] Error handling (Impossible to find device, adapter not found, can't connect, connection not working) 
 - [ ] Add protobuffer messages to enable writing in them

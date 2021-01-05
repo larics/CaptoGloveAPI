@@ -101,7 +101,6 @@ void CaptoGloveAPI::addDevice(const QBluetoothDeviceInfo &device){
     if (device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration){
         m_devices.append(new DeviceInfo(device));
 
-        qDebug() << "Device name:" << device.name();
         qDebug() << "Device address:" << device.address();
     }
 
@@ -239,6 +238,7 @@ void CaptoGloveAPI::serviceScanDone(){
         m_FingerPositionsService->discoverDetails();
 
         m_connected = true;
+        m_initialized = true;
     }
 
 
@@ -694,8 +694,6 @@ void CaptoGloveAPI::fingerPoseServiceStateChanged(QLowEnergyService::ServiceStat
             QLowEnergyDescriptor desc = m_fingerSecond.descriptor(QBluetoothUuid::ClientCharacteristicConfiguration);
             m_FingerPositionsService->writeDescriptor(desc, QByteArray::fromHex("0100"));
 
-            m_initialized = true;
-
             emit initialized();
         }
         break;
@@ -813,6 +811,8 @@ void CaptoGloveAPI::startConnection(){
 }
 
 void CaptoGloveAPI::run(){
+    std::cout << "2" << std::endl;
+
     qDebug() << "Starting device discovery";
     startDeviceDiscovery();
 }
@@ -968,6 +968,12 @@ QString CaptoGloveAPI::getDeviceName()
     return m_deviceName;
 }
 
+bool CaptoGloveAPI::getInit()
+{
+    return m_initialized;
+}
+
+
 bool CaptoGloveAPI::isRandomAddress() const
 {
     return m_randomAdress;
@@ -987,8 +993,4 @@ bool CaptoGloveAPI::alive() const
     return false;
 }
 
-bool CaptoGloveAPI::getInit() const
-{
-    return m_initialized;
-}
 
