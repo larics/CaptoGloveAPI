@@ -23,7 +23,7 @@ Logger::Logger(QObject *parent) : QObject(parent)
 
 }
 
-void Logger::readParameters     (QSettings *Setting)
+void Logger::loadSettings     (QSettings *Setting)
 {
     m_screenDiag[DiagInfo]      = Setting->value("ScreenInfo"   ,m_screenDiag[DiagInfo]).toBool();
     m_screenDiag[DiagError]     = Setting->value("ScreenError"  ,m_screenDiag[DiagError]).toBool();
@@ -43,7 +43,7 @@ void Logger::readParameters     (QSettings *Setting)
     m_fileName     = Setting->value("FileName",m_fileName).toString();
 }
 
-void Logger::writeParameters    (QSettings *Setting)
+void Logger::saveSettings    (QSettings *Setting)
 {
     Setting->setValue("ScreenInfo"      ,m_screenDiag[DiagInfo]);
     Setting->setValue("ScreenError"     ,m_screenDiag[DiagError]);

@@ -49,8 +49,8 @@ public:
         return _instance;
     }
 
-    void readParameters     (QSettings *Setting);
-    void writeParameters    (QSettings *Setting);
+    void loadSettings     (QSettings *Setting);
+    void saveSettings     (QSettings *Setting);
 
     bool start        (void);
     bool stop         (void);
@@ -72,9 +72,8 @@ signals:
 
 public slots:
     void protobufPrintSlot      (google::protobuf::Message *msg);
-    void diagSlot               (int Type, QString Text);
     void diagSlot               (DiagType Type, QString Text);
-
+    void diagSlot               (int Type, QString Text);
 
 private:
     bool openLogFile        (QString filePath);

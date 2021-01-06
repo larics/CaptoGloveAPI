@@ -62,7 +62,7 @@ unix{
     LIBS += -pthread
 
     # Include protobuf
-    LIBS += -L"$$/home/filip/protobuf/build/" -lprotobuf
+    LIBS += -L"$$/home/zozan/Work/FER/protobuf/build/" -lprotobuf
 
 }
 

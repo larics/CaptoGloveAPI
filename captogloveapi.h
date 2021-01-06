@@ -34,9 +34,17 @@ class CaptoGloveAPI : public QObject
     Q_PROPERTY(QVariant devicesList READ getDevices NOTIFY devicesUpdated)
     Q_PROPERTY(QVariant servicesList READ getServices NOTIFY servicesUpdated)
     Q_PROPERTY(QVariant charactersiticsList READ getCharacteristics NOTIFY characteristicsUpdated)
-    Q_PROPERTY(bool state READ state NOTIFY stateChanged)
     Q_PROPERTY(bool controllerError READ hasControllerError)
     Q_PROPERTY(bool alive READ alive NOTIFY aliveChanged)
+    //Q_PROPERTY(DeviceState deviceState READ deviceState NOTIFY deviceStateChanged)
+
+    typedef enum{
+        DeviceFound=0,
+        DeviceConnected,
+        DevicePaired,
+        DeviceError,
+        DeviceNotFound,
+    }DeviceState;
 
 public:
     CaptoGloveAPI(QObject *parent, QString configPath);
@@ -49,18 +57,16 @@ public:
     // Service Getters
     int getBatteryLevel();                                                                  // xx
     QString getDeviceName();                                                                // xx
+    DeviceState getDeviceState();
     QByteArray getCurrentFingerPosition();                                                  // xx
 
-    QString getUpdate();                                                                    // xx
     bool alive() const;
-    bool state();                                                                           // xx
     bool hasControllerError() const;                                                        // xx
     bool isRandomAddress() const;
 
-    void saveSettings       (QString path);                                                 // init, TODO
-    void loadSettings       (QString path);                                                 // init, TODO
 
-    void initializeController (const QBluetoothDeviceInfo &info);                           // xx, TODO: Initialize controller
+
+    void initializeController (const QBluetoothDeviceInfo &info);                           // xx
 
                                                                                             // init, TEST method
     void run();
@@ -80,6 +86,8 @@ public slots:
 
     void connectToService(const QString &uuid);
     void disconnectFromDevice();
+
+    void setDeviceStateSlot(CaptoGloveAPI::DeviceState state);
 
 private slots:
     // QBluetoothDeviceDiscoveryAgent
@@ -116,8 +124,12 @@ Q_SIGNALS:
     void testSignal();
     void updateFingerState(captoglove_v1::FingerFeedbackMsg);
     void updateBatteryState();
+    void setDeviceStateSignal(CaptoGloveAPI::DeviceState state);
 
 private:
+    void saveSettings(QSettings* Settings);
+    void loadSettings(QSettings* Settings);
+
     // QLowEnergyController
     void serviceDiscovered(const QBluetoothUuid &gatt);
     void checkServiceStatus(const QBluetoothUuid &uuid);
@@ -148,7 +160,6 @@ private:
     void confirmedDescriptorWrite(const QLowEnergyDescriptor &d,
                                   const QByteArray &value);
 
-
     // General
     void readInitialValue(QLowEnergyService &service);
 
@@ -159,6 +170,7 @@ private:
     void getScanParams();
 
     QString m_configPath;
+    QSettings* m_config;
 
     QBluetoothDeviceDiscoveryAgent *m_discoveryAgent;
     QBluetoothLocalDevice *localDevice;
@@ -168,18 +180,22 @@ private:
     QList<QBluetoothDeviceInfo> m_devicesBTInfo;
     QList<ServiceInfo *> m_services;
     QMap<QBluetoothUuid, CharacteristicInfo*> m_characteristics;
+    int m_scanTimeoutMs;
 
-    int m_scanTimeout;
+    // Stuff related to device
+    DeviceState m_deviceState;
+    QString m_deviceName="";
+    QString m_deviceAddress="";
 
     // Service flags
     bool m_randomAdress;
-    bool m_foundGAService;
-    bool m_foundBatteryLevelService;
-    bool m_foundHIDService;
-    bool m_foundHIDControlPointService;
-    bool m_foundScanParametersService;
-    bool m_foundDeviceInfoService;
-    bool m_foundFingerPositionService;
+    bool m_foundGAService=false;
+    bool m_foundBatteryLevelService=false;
+    bool m_foundHIDService=false;
+    bool m_foundHIDControlPointService=false;
+    bool m_foundScanParametersService=false;
+    bool m_foundDeviceInfoService=false;
+    bool m_foundFingerPositionService=false;
 
     // Control params
     bool m_reconnect = true;
@@ -206,7 +222,6 @@ private:
     // Values of interest for getter
     int m_batteryLevelValue;
     QByteArray m_currentFingerPosition;
-    QString m_deviceName;
 
     captoglove_v1::BatteryLevelMsg m_batteryMsg;
     captoglove_v1::DeviceInformationMsg m_deviceInformationMsg;
