@@ -105,7 +105,7 @@ private slots:
     void serviceDetailsDiscovered(QLowEnergyService::ServiceState newState);
     void processLoop();
 
-    captoglove_v1::FingerFeedbackMsg setFingerMsg();
+    captoglove_v1::FingerFeedbackMsg setFingerMsg(QVector<quint8> fingerVector);
     captoglove_v1::BatteryLevelMsg setBatteryMsg();
 
 
@@ -168,6 +168,8 @@ private:
     void setUpdate(const QString &message);
     int readBatteryLevel();
     void getScanParams();
+
+    quint8 convertToPercentage(quint8 value);
 
     QString m_configPath;
     QSettings* m_config;

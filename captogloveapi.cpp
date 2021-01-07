@@ -746,38 +746,23 @@ void CaptoGloveAPI::fingerPoseServiceStateChanged(QLowEnergyService::ServiceStat
 
 void CaptoGloveAPI::fingerPoseCharacteristicChanged(const QLowEnergyCharacteristic &c, const QByteArray &value){
 
-    // Read current characteristic value
-    m_FingerPositionsService->readCharacteristic(c);
 
     // Set current finger value
-    m_currentFingerPosition = c.value();
+    m_currentFingerPosition = value;
 
-    qDebug() << "Fingers value is: " << m_currentFingerPosition;
+    int dataLength = value.size();
 
-    if (c.uuid() == QBluetoothUuid(QString("000f001-3333-acda-0000-ff522ee73921")))
+    QVector<quint8> result;
+    for (int i = 0; i < dataLength; ++i )
     {
-        qDebug() << "Characteristic f001 changed!" ;
+
+        QByteArray temp;
+        temp.append(m_currentFingerPosition.at(i));
+        quint8 currentValue = *reinterpret_cast<const quint8 *>(temp.constData());
+        result.append(currentValue);
     }
 
-    if (c.uuid() == QBluetoothUuid(QString("000f002-3333-acda-0000-ff522ee73921")))
-
-    {
-        qDebug() << "Characteristic f002 changed!";
-    }
-
-    if (c.uuid() == QBluetoothUuid(QString("000f003-3333-acda-0000-ff522ee73921")))
-    {
-        qDebug() << "Characteristic f003 changed!";
-
-    }
-
-    if (c.uuid() == QBluetoothUuid(QString("000f004-3333-acda-0000-ff522ee73921")))
-    {
-        qDebug() << "Characteristic f004 changed!";
-    }
-
-
-    emit updateFingerState(setFingerMsg());
+    emit updateFingerState(setFingerMsg(result));
 
 }
 
@@ -786,15 +771,24 @@ void CaptoGloveAPI::confirmedDescriptorWrite(const QLowEnergyDescriptor &d, cons
     qDebug() << "Written descriptor!!!";
 }
 
-captoglove_v1::FingerFeedbackMsg CaptoGloveAPI::setFingerMsg()
+captoglove_v1::FingerFeedbackMsg CaptoGloveAPI::setFingerMsg(QVector<quint8> fingerVector)
 {
+    quint8 thumb, index, middle, ring, little;
+
+    thumb = convertToPercentage(fingerVector.at(16));
+    index = convertToPercentage(fingerVector.at(13));
+    middle = convertToPercentage(fingerVector.at(10));
+    ring = convertToPercentage(fingerVector.at(6));
+    little = convertToPercentage(fingerVector.at(3));
 
     // TODO: transform to valid datta format currentFingerPosition
-    m_fingerFeedbackMsg.set_thumb_finger(m_currentFingerPosition.at(0));
-    m_fingerFeedbackMsg.set_index_finger(m_currentFingerPosition.at(2));
-    m_fingerFeedbackMsg.set_middle_finger(m_currentFingerPosition.at(4));
-    m_fingerFeedbackMsg.set_ring_finger(m_currentFingerPosition.at(6));
-    m_fingerFeedbackMsg.set_thumb_finger(m_currentFingerPosition.at(8));
+    m_fingerFeedbackMsg.set_thumb_finger(thumb);
+    m_fingerFeedbackMsg.set_index_finger(index);
+    m_fingerFeedbackMsg.set_middle_finger(middle);
+    m_fingerFeedbackMsg.set_ring_finger(ring);
+    m_fingerFeedbackMsg.set_little_finger(little);
+
+    qDebug() << "THUMB: " << thumb << "\t INDEX: " << index << "\t MIDDLE: " << middle << "\t RING: " << ring << "\t PINKY: " << little ;
 
     return m_fingerFeedbackMsg;
 
@@ -986,4 +980,12 @@ bool CaptoGloveAPI::alive() const
     return false;
 }
 
+quint8 CaptoGloveAPI::convertToPercentage(quint8 value)
+{
+    float temp;
+    temp = static_cast<float>(value)/255 * 100;
 
+    quint8 percentage = static_cast<quint8>(temp);
+
+    return percentage;
+}
