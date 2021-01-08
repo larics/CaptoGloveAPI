@@ -46,6 +46,7 @@ class CaptoGloveAPI : public QObject
         DeviceNotFound,
     }DeviceState;
 
+
 public:
     CaptoGloveAPI(QObject *parent, QString configPath);
     ~CaptoGloveAPI();
@@ -105,7 +106,7 @@ private slots:
     void serviceDetailsDiscovered(QLowEnergyService::ServiceState newState);
     void processLoop();
 
-    captoglove_v1::FingerFeedbackMsg setFingerMsg(QVector<quint8> fingerVector);
+    captoglove_v1::FingerFeedbackMsg setFingerMsg(QVector<int> fingerVector);
     captoglove_v1::BatteryLevelMsg setBatteryMsg();
 
 
@@ -182,12 +183,15 @@ private:
     QList<QBluetoothDeviceInfo> m_devicesBTInfo;
     QList<ServiceInfo *> m_services;
     QMap<QBluetoothUuid, CharacteristicInfo*> m_characteristics;
-    int m_scanTimeoutMs;
+
 
     // Stuff related to device
     DeviceState m_deviceState;
     QString m_deviceName="";
     QString m_deviceAddress="";
+    int m_scanTimeoutMs;
+    bool m_rightHand;
+    int m_thumbIndex; int m_indexIndex; int m_middleIndex; int m_ringIndex; int m_pinkyIndex;
 
     // Service flags
     bool m_randomAdress;
@@ -224,6 +228,7 @@ private:
     // Values of interest for getter
     int m_batteryLevelValue;
     QByteArray m_currentFingerPosition;
+
 
     captoglove_v1::BatteryLevelMsg m_batteryMsg;
     captoglove_v1::DeviceInformationMsg m_deviceInformationMsg;

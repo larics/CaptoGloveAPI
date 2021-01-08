@@ -51,6 +51,12 @@ CaptoGloveAPI::CaptoGloveAPI(QObject *parent,  QString configPath) : QObject(par
     Logger::instance() -> loadSettings(m_config);
     m_config->endGroup();
 
+    if (m_rightHand){
+        m_thumbIndex = 2; m_indexIndex = 5; m_middleIndex = 8; m_ringIndex=11; m_pinkyIndex=14;
+    }else{
+        m_thumbIndex = 16; m_indexIndex = 13; m_middleIndex=10; m_ringIndex=6; m_pinkyIndex=3; //test again
+    }
+
 
 
 }
@@ -65,11 +71,13 @@ void CaptoGloveAPI::loadSettings(QSettings* Setting)
     m_deviceAddress = Setting->value("DeviceAddress",   m_deviceAddress).toString();
     m_scanTimeoutMs = Setting->value("ScanTimeoutMs",   m_scanTimeoutMs).toInt();
     m_randomAdress  = Setting->value("RandomAddress",   m_randomAdress).toBool();
+    m_rightHand     = Setting->value("RightHand",       m_rightHand).toBool();
 
     qDebug() << "Loaded m_deviceName" << m_deviceName;
     qDebug() << "Loaded m_deviceAddress" << m_deviceAddress;
     qDebug() << "Loaded m_scanTimeoutMs" << m_scanTimeoutMs;
     qDebug() << "Loaded m_radnomAddress" << m_randomAdress;
+    qDebug() << "Loaded m_rightHand" << m_rightHand;
 }
 
 void CaptoGloveAPI::saveSettings(QSettings* Setting)
@@ -79,6 +87,7 @@ void CaptoGloveAPI::saveSettings(QSettings* Setting)
     Setting->setValue("DeviceAddress",   m_deviceAddress);
     Setting->setValue("ScanTimeoutMs",   m_scanTimeoutMs);
     Setting->setValue("RandomAddress",   m_randomAdress);
+    Setting->setValue("RightHand",       m_rightHand);
 
 }
 
@@ -750,17 +759,37 @@ void CaptoGloveAPI::fingerPoseCharacteristicChanged(const QLowEnergyCharacterist
     // Set current finger value
     m_currentFingerPosition = value;
 
+    //qDebug() << "Current position:" << m_currentFingerPosition.toHex();
+
+
     int dataLength = value.size();
 
-    QVector<quint8> result;
-    for (int i = 0; i < dataLength; ++i )
+    QVector<int> result;
+    QVector<quint16> result1;
+    QVector<QString> debugString;
+
+    for (int i = 0; i < dataLength-1; ++i )
     {
 
         QByteArray temp;
+        temp.append(m_currentFingerPosition.at(i+1));
         temp.append(m_currentFingerPosition.at(i));
-        quint8 currentValue = *reinterpret_cast<const quint8 *>(temp.constData());
-        result.append(currentValue);
+
+        bool ok;
+        result.append(QString::fromLatin1(temp.toHex()).toUInt(&ok, 16));
+
+        // Used to determine index of certain finger
+        //debugString.append(QString(m_currentFingerPosition.at(i)));
     }
+
+
+    QByteArray test;
+    test.append(m_currentFingerPosition.at(9));
+    test.append(m_currentFingerPosition.at(8));
+    bool ok;
+    qDebug() << "MIDDLE:" << QString::fromLatin1(test.toHex()).toUInt(&ok, 16);
+
+    qDebug() << "Debug:" << result;
 
     emit updateFingerState(setFingerMsg(result));
 
@@ -771,15 +800,22 @@ void CaptoGloveAPI::confirmedDescriptorWrite(const QLowEnergyDescriptor &d, cons
     qDebug() << "Written descriptor!!!";
 }
 
-captoglove_v1::FingerFeedbackMsg CaptoGloveAPI::setFingerMsg(QVector<quint8> fingerVector)
+captoglove_v1::FingerFeedbackMsg CaptoGloveAPI::setFingerMsg(QVector<int> fingerVector)
 {
-    quint8 thumb, index, middle, ring, little;
+    uint16_t thumb, index, middle, ring, little;
 
-    thumb = convertToPercentage(fingerVector.at(16));
-    index = convertToPercentage(fingerVector.at(13));
-    middle = convertToPercentage(fingerVector.at(10));
-    ring = convertToPercentage(fingerVector.at(6));
-    little = convertToPercentage(fingerVector.at(3));
+    thumb = convertToPercentage(fingerVector.at(m_thumbIndex));
+    index = convertToPercentage(fingerVector.at(m_indexIndex));
+    middle = convertToPercentage(fingerVector.at(m_middleIndex));
+    ring = convertToPercentage(fingerVector.at(m_ringIndex));
+    little = convertToPercentage(fingerVector.at(m_pinkyIndex));
+
+    thumb = fingerVector.at(m_thumbIndex);
+    index = fingerVector.at(m_indexIndex);
+    middle = fingerVector.at(m_middleIndex);
+    ring = fingerVector.at(m_ringIndex);
+    little = fingerVector.at(m_pinkyIndex);
+
 
     // TODO: transform to valid datta format currentFingerPosition
     m_fingerFeedbackMsg.set_thumb_finger(thumb);
@@ -839,7 +875,6 @@ void CaptoGloveAPI::startConnection(){
 }
 
 void CaptoGloveAPI::run(){
-    std::cout << "2" << std::endl;
 
     qDebug() << "Starting device discovery";
     startDeviceDiscovery();
