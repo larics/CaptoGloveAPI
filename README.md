@@ -1,8 +1,29 @@
 # CaptoGloveAPI 
 
 
-CaptoGloveAPI is cpp wrapper for methods for using Capto Gloves with the given SDK. 
+CaptoGloveAPI is Linux driver for ROS. Intened for use with: 
+ - [captoglove_ros_wrapper](https://github.com/fzoric8/captoglove_ros_wrapper) 
+ - [docker_files](https://github.com/fzoric8/docker_files)
+ - [protobuffers](https://github.com/fzoric8/protobuffers)  
 
+# In order to realize full functionality of CaptoGloves on Linux PCs this are very valuable resources: 
+
+ - [Signals & Slots](https://doc.qt.io/qt-5/signalsandslots.html) 
+ - [Event driven architecture](https://www.oreilly.com/library/view/software-architecture-patterns/9781491971437/ch02.html) 
+ - [QtBluetooth](https://doc.qt.io/qt-5/qtbluetooth-index.html) 
+ - [Qt BLE overview](https://doc.qt.io/qt-5/qtbluetooth-le-overview.html)
+ - [Creating Qt project files](https://doc.qt.io/qt-5/qmake-project-files.html) 
+
+
+# Classes that are heavily used throught development: 
+ - [QtLowEnergyController](https://doc.qt.io/qt-5/qlowenergycontroller.html) 
+ - [QtLowEnergyService](https://doc.qt.io/qt-5/qlowenergyservice.html) 
+ - [QtLowEnergyCharacteristic](https://doc.qt.io/qt-5/qlowenergycharacteristic.html) 
+ - [QtLowEnergyDescriptor](https://doc.qt.io/qt-5/qlowenergydescriptor.html) 
+
+# Qt uses BlueZ as underlying technology to support this, this resources were extremely helpful:
+ - [Get started with BLE](https://www.jaredwolff.com/get-started-with-bluetooth-low-energy/)
+ - [Control With BlueZ](https://learn.adafruit.com/reverse-engineering-a-bluetooth-low-energy-light-bulb/control-with-bluez) 
 
 # Dependencies 
 
@@ -33,6 +54,12 @@ There is [LE scanner](https://code.qt.io/cgit/qt/qtconnectivity.git/tree/example
 And there is application where we have continuous exchange of data between BLE server and client on 
 following [link](https://code.qt.io/cgit/qt/qtconnectivity.git/tree/examples/bluetooth/heartrate-game) 
 
+## TBD:
+
+- [ ] Document existing code to comply to doxygen standard
+- [ ] Explore different characteristics of CaptoGloves (gyroscope/accelerometer) 
+- [ ] Implement methods to enable gyroscope/accelerometer control  
+
 
 ## TODO: 
 - [x] Initialize controller 
@@ -43,6 +70,8 @@ following [link](https://code.qt.io/cgit/qt/qtconnectivity.git/tree/examples/blu
 - [x] Scan characteristics 
 - [x] Check for updates of certain characteristsics/services
 - [x] Add Logger / Needed for ROS
+- [x] Add ros wrapper 
+- [x] Use CaptoGloveAPI with gloves to control drone 
 - [ ] Check Logger functionality based on signals 
 - [ ] Map all signals and slots 
 - [ ] Refactor code 
