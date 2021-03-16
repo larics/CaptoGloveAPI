@@ -58,7 +58,6 @@ CaptoGloveAPI::CaptoGloveAPI(QObject *parent,  QString configPath) : QObject(par
     }
 
 
-
 }
 
 CaptoGloveAPI::~CaptoGloveAPI() {
@@ -66,6 +65,7 @@ CaptoGloveAPI::~CaptoGloveAPI() {
 
 void CaptoGloveAPI::loadSettings(QSettings* Setting)
 {
+    //! Load settings from config.ini file
 
     m_deviceName    = Setting->value("DeviceName",      m_deviceName).toString();
     m_deviceAddress = Setting->value("DeviceAddress",   m_deviceAddress).toString();
@@ -83,6 +83,8 @@ void CaptoGloveAPI::loadSettings(QSettings* Setting)
 void CaptoGloveAPI::saveSettings(QSettings* Setting)
 {
 
+    //! Save settings to config.ini file
+
     Setting->setValue("DeviceName",      m_deviceName);
     Setting->setValue("DeviceAddress",   m_deviceAddress);
     Setting->setValue("ScanTimeoutMs",   m_scanTimeoutMs);
@@ -95,6 +97,9 @@ void CaptoGloveAPI::saveSettings(QSettings* Setting)
 // ##############  DEVICES ##############
 void CaptoGloveAPI::startDeviceDiscovery()
 {
+
+    //! Start process of BLE devices discovery
+
     qDeleteAll(m_devices);
     m_devices.clear();
     emit devicesUpdated();
@@ -113,6 +118,7 @@ void CaptoGloveAPI::startDeviceDiscovery()
 
 void CaptoGloveAPI::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
 {
+    //! Error handling if device discovery agent fails to start device scanning
     //TODO: Add error handling
     if (error == QBluetoothDeviceDiscoveryAgent::PoweredOffError)
         setUpdate(tr("The Bluetooth adaptor is powered off."));
@@ -131,7 +137,7 @@ void CaptoGloveAPI::deviceScanError(QBluetoothDeviceDiscoveryAgent::Error error)
 
 void CaptoGloveAPI::addDevice(const QBluetoothDeviceInfo &device){
 
-
+    //! Add found bluetooth devices to the list of found devices
     // DeviceInfo foundDevice;
     if (device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration){
         m_devices.append(new DeviceInfo(device));
@@ -149,6 +155,7 @@ void CaptoGloveAPI::addDevice(const QBluetoothDeviceInfo &device){
 
 void CaptoGloveAPI::disconnectFromDevice(){
 
+    //! Disconnect from bluetooth device with which are you connected now
     if (m_controller->state() != QLowEnergyController::UnconnectedState)
         m_controller->disconnectFromDevice();
     else
@@ -159,6 +166,7 @@ void CaptoGloveAPI::disconnectFromDevice(){
 // ############## INITIALIZE CONTROLLER ##############
 void CaptoGloveAPI::initializeController(const QBluetoothDeviceInfo &info)
 {
+    //! Initialize BLE controller on local device
 
     if (m_controller){
         m_controller->disconnectFromDevice();
@@ -196,6 +204,7 @@ void CaptoGloveAPI::initializeController(const QBluetoothDeviceInfo &info)
 // ############## LOW ENERGY CONTROLLER SLOTS ##############
 void CaptoGloveAPI::deviceConnected()
 {
+    //! Start service discovery when connected to device
     Logger::instance()->sendMessageToLog("Device connected. Scanning services.");
     setUpdate("Back\n(Discovering services...)");
     m_connected = true;
@@ -204,6 +213,7 @@ void CaptoGloveAPI::deviceConnected()
 
 void CaptoGloveAPI::deviceDisconnected()
 {
+    //! What happens when device disconnects
     qWarning() << "Disconnected from the device!";
     emit disconnected();
     // TODO: Add  reconnection logic
@@ -220,6 +230,7 @@ void CaptoGloveAPI::errorReceived()
 
 void CaptoGloveAPI::serviceScanDone(){
 
+    //! Discovering details (characteristics) about services when scan is done
     qDebug() << "Service scan done!!!!!";
     if (m_services.isEmpty())
         emit servicesUpdated();
@@ -289,6 +300,7 @@ void CaptoGloveAPI::serviceScanDone(){
 
 bool CaptoGloveAPI::hasControllerError() const
 {
+    //! Check if controller is in error
     return (m_controller && m_controller->error() != QLowEnergyController::NoError);
 }
 
@@ -297,6 +309,7 @@ bool CaptoGloveAPI::hasControllerError() const
 void CaptoGloveAPI::scanServices(DeviceInfo &device)        // TODO: Check why would I use address param
 {
 
+    //! Scan for services of available devices
     qDeleteAll(m_characteristics);
     m_characteristics.clear();
     emit characteristicsUpdated();
@@ -327,6 +340,7 @@ void CaptoGloveAPI::scanServices(DeviceInfo &device)        // TODO: Check why w
 
 void CaptoGloveAPI::connectToService(const QString &uuid)
 {
+    //! Connect to the particular service of the device (all not discovered ones)
     QLowEnergyService *service = nullptr;
     for (auto s: qAsConst(m_services)){
         auto serviceInfo = qobject_cast<ServiceInfo *>(s);
@@ -365,6 +379,7 @@ void CaptoGloveAPI::connectToService(const QString &uuid)
 
 void CaptoGloveAPI::serviceDetailsDiscovered(QLowEnergyService::ServiceState newState)
 {
+    //! Create memory object for each characteristics/service that's discovered in service
     if (newState != QLowEnergyService::ServiceDiscovered) {
         // do not hang in "Scanning for characteristics" mode forever
         // in case the service discovery failed
@@ -389,6 +404,7 @@ void CaptoGloveAPI::serviceDetailsDiscovered(QLowEnergyService::ServiceState new
 
 void CaptoGloveAPI::addLowEnergyService(const QBluetoothUuid &uuid)
 {
+    //! Add low energy service to the list of available services
     QLowEnergyService *service = m_controller->createServiceObject(uuid);       // This part already creates service object in controller
 
     if (!service){
@@ -410,6 +426,7 @@ void CaptoGloveAPI::addLowEnergyService(const QBluetoothUuid &uuid)
 void CaptoGloveAPI::checkServiceStatus(const QBluetoothUuid &uuid)
 {
 
+    //! Check status for each service available and save them in corresponding booleans
     if (uuid == QBluetoothUuid::GenericAccess && !m_foundGAService){
         qDebug() << "Discovered Generic Access Service!";
         m_foundGAService = true;
@@ -455,6 +472,7 @@ void CaptoGloveAPI::checkServiceStatus(const QBluetoothUuid &uuid)
 
 void CaptoGloveAPI::serviceStateChanged(QLowEnergyService::ServiceState s)
 {
+    //! Method that's triggered everytime it changes value
     qDebug() << "Discovering  GA details in state: " << s ;
     switch(s){
     case QLowEnergyService::DiscoveringServices:
@@ -486,6 +504,7 @@ void CaptoGloveAPI::serviceStateChanged(QLowEnergyService::ServiceState s)
 // BATTERY SERVICE
 void CaptoGloveAPI::batteryServiceStateChanged(QLowEnergyService::ServiceState s)
 {
+    //! Battery service state changed
     qDebug() << "Discovering Battery details in state: " << s ;
     switch(s){
     case QLowEnergyService::DiscoveringServices:
@@ -530,7 +549,7 @@ void CaptoGloveAPI::batteryServiceStateChanged(QLowEnergyService::ServiceState s
 
 void CaptoGloveAPI::updateBatteryLevelValue(const QLowEnergyCharacteristic &c, const QByteArray &value  )
 {
-
+    //! Update battery level value (Read id from characteristic that's been read)
     // ignore any other characteristic change -> shouldn't really happen though
     if (c.uuid() != QBluetoothUuid(QBluetoothUuid::BatteryLevel))
         return;
@@ -550,6 +569,7 @@ void CaptoGloveAPI::updateBatteryLevelValue(const QLowEnergyCharacteristic &c, c
 
 void CaptoGloveAPI::confirmedBatteryDescWrite(const QLowEnergyDescriptor &d, const QByteArray &value)
 {
+    //! Something
     if (d.isValid() && d == m_batteryNotificationDesc && value == QByteArray::fromHex("0000")) {
         //disabled notifications -> assume disconnect intent
         m_controller->disconnectFromDevice();
@@ -560,6 +580,7 @@ void CaptoGloveAPI::confirmedBatteryDescWrite(const QLowEnergyDescriptor &d, con
 
 int CaptoGloveAPI::readBatteryLevel()
 {
+    //! Read current battery level (characteristic)
     QLowEnergyCharacteristic batteryLevel;
     batteryLevel = m_batteryLevelService->characteristic(QBluetoothUuid::BatteryLevel);
 
@@ -734,6 +755,7 @@ void CaptoGloveAPI::fingerPoseServiceStateChanged(QLowEnergyService::ServiceStat
             QLowEnergyCharacteristic m_fingerThird = m_FingerPositionsService->characteristic(QBluetoothUuid(QString("000f004-333-acda-0000-ff522ee73921")));
 
             QLowEnergyDescriptor desc = m_fingerSecond.descriptor(QBluetoothUuid::ClientCharacteristicConfiguration);
+            // NOTIFICATION DESCRIPTOR -> VERY IMPORTANT STUFF
             m_FingerPositionsService->writeDescriptor(desc, QByteArray::fromHex("0100"));
 
             emit initialized();
@@ -780,6 +802,8 @@ void CaptoGloveAPI::fingerPoseCharacteristicChanged(const QLowEnergyCharacterist
 
         // Used to determine index of certain finger
         //debugString.append(QString(m_currentFingerPosition.at(i)));
+
+        // TODO: Add calibration process -> Collect first 100 measurements to
     }
 
 
@@ -791,7 +815,10 @@ void CaptoGloveAPI::fingerPoseCharacteristicChanged(const QLowEnergyCharacterist
 
     qDebug() << "Debug:" << result;
 
+
     emit updateFingerState(setFingerMsg(result));
+
+
 
 }
 
@@ -804,11 +831,11 @@ captoglove_v1::FingerFeedbackMsg CaptoGloveAPI::setFingerMsg(QVector<int> finger
 {
     uint16_t thumb, index, middle, ring, little;
 
-    thumb = convertToPercentage(fingerVector.at(m_thumbIndex));
-    index = convertToPercentage(fingerVector.at(m_indexIndex));
-    middle = convertToPercentage(fingerVector.at(m_middleIndex));
-    ring = convertToPercentage(fingerVector.at(m_ringIndex));
-    little = convertToPercentage(fingerVector.at(m_pinkyIndex));
+    //thumb = convertToPercentage(fingerVector.at(m_thumbIndex));
+    //index = convertToPercentage(fingerVector.at(m_indexIndex));
+    //middle = convertToPercentage(fingerVector.at(m_middleIndex));
+    //ring = convertToPercentage(fingerVector.at(m_ringIndex));
+    //little = convertToPercentage(fingerVector.at(m_pinkyIndex));
 
     thumb = fingerVector.at(m_thumbIndex);
     index = fingerVector.at(m_indexIndex);
@@ -840,6 +867,7 @@ captoglove_v1::BatteryLevelMsg CaptoGloveAPI::setBatteryMsg()
 // ############## FUNCTIONAL ##############
 void CaptoGloveAPI::startConnection(){
 
+    //! Start connection with wanted remote peripheral defined in config.ini
 
     DeviceInfo *m_devicePtr;
     // TODO: Think of stopping if haven't discovered / connected to wanted device
@@ -876,6 +904,7 @@ void CaptoGloveAPI::startConnection(){
 
 void CaptoGloveAPI::run(){
 
+    //! Starter method
     qDebug() << "Starting device discovery";
     startDeviceDiscovery();
 }
@@ -889,6 +918,7 @@ void CaptoGloveAPI::processLoop(){
 
 bool CaptoGloveAPI::getFingers()
 {
+    //! initial thought/Obsolete method, but descriptor that wrote notification to that was fine
     QLowEnergyCharacteristic m_fingerZero =  m_FingerPositionsService->characteristic(QBluetoothUuid(QString("0000f001-3333-acda-0000-ff522ee73921")));
     QLowEnergyCharacteristic m_fingerFirst = m_FingerPositionsService->characteristic(QBluetoothUuid(QString("0000f002-3333-acda-0000-ff522ee73921")));
     QLowEnergyCharacteristic m_fingerSecond = m_FingerPositionsService->characteristic(QBluetoothUuid(QString("0000f003-3333-acda-0000-ff522ee73921")));
@@ -901,16 +931,6 @@ bool CaptoGloveAPI::getFingers()
 
     QLowEnergyDescriptor desc = m_fingerSecond.descriptor(QBluetoothUuid::ClientCharacteristicConfiguration);
     m_FingerPositionsService->writeDescriptor(desc, QByteArray::fromHex("0100"));
-
-    // Find out properties
-    qDebug() << "Properties for zero:" << m_fingerZero.properties();
-    qDebug() << "Properties for first: " << m_fingerFirst.properties();
-    qDebug() << "Properties for second:" << m_fingerSecond.properties();
-    qDebug() << "Properties for third:" << m_fingerThird.properties();
-
-    qDebug() << "m_fingerFirst" << m_fingerFirst.value();
-    qDebug() << "m_fingerSecond" << m_fingerSecond.value();
-    qDebug() << "m_fingerThird" << m_fingerThird.value();
 
     return m_foundFingerPositionService;
 }
@@ -957,22 +977,25 @@ void CaptoGloveAPI::discoverServices()
 // ############## GETTERS ##############
 QVariant CaptoGloveAPI::getDevices(){
 
+    //! Get list of all found devices
     return QVariant::fromValue(m_devices);
 }
 
 QVariant CaptoGloveAPI::getServices(){
 
+    //! Get list of all found services for each device
     return QVariant::fromValue(m_services);
 }
 
 QVariant CaptoGloveAPI::getCharacteristics(){
 
+    //! Get list of all found characteristics for device
     return QVariant::fromValue(m_characteristics);
 }
 
 int CaptoGloveAPI::getBatteryLevel()
 {
-
+    //! Some obsolete getter
     return m_batteryLevelValue;
 
 }

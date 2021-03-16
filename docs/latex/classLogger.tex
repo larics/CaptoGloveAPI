@@ -1,0 +1,86 @@
+\hypertarget{classLogger}{}\doxysection{Logger Class Reference}
+\label{classLogger}\index{Logger@{Logger}}
+
+
+Inheritance diagram for Logger\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=136pt]{classLogger__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Logger\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=136pt]{classLogger__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Slots}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classLogger_afb333e6236121c1b4127789503b919df}\label{classLogger_afb333e6236121c1b4127789503b919df}} 
+void {\bfseries protobuf\+Print\+Slot} (google\+::protobuf\+::\+Message $\ast$msg)
+\item 
+\mbox{\Hypertarget{classLogger_a4c52721d8073a9038fe28764f20fc4d8}\label{classLogger_a4c52721d8073a9038fe28764f20fc4d8}} 
+void {\bfseries diag\+Slot} (Diag\+Type Type, Q\+String Text)
+\item 
+\mbox{\Hypertarget{classLogger_aa17ce4577bdcd0e83d24367bdbcac688}\label{classLogger_aa17ce4577bdcd0e83d24367bdbcac688}} 
+void {\bfseries diag\+Slot} (int Type, Q\+String Text)
+\end{DoxyCompactItemize}
+\doxysubsection*{Signals}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classLogger_a69e10fe9c59fab6c7e5ca1a5217d6303}\label{classLogger_a69e10fe9c59fab6c7e5ca1a5217d6303}} 
+void {\bfseries diag\+Signal} (Diag\+Type Type, Q\+String Text)
+\item 
+\mbox{\Hypertarget{classLogger_a1821790e1db468307e010bed00c2675d}\label{classLogger_a1821790e1db468307e010bed00c2675d}} 
+void {\bfseries log\+Signal} (captoglove\+\_\+v1\+::\+Log\+Msg log)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classLogger_a6fdac0c36a121f6ae482824ec5a5f49a}\label{classLogger_a6fdac0c36a121f6ae482824ec5a5f49a}} 
+void {\bfseries load\+Settings} (Q\+Settings $\ast$Setting)
+\item 
+\mbox{\Hypertarget{classLogger_aad6ccc4d1157fad2538a4b76f0dfb021}\label{classLogger_aad6ccc4d1157fad2538a4b76f0dfb021}} 
+void {\bfseries save\+Settings} (Q\+Settings $\ast$Setting)
+\item 
+\mbox{\Hypertarget{classLogger_a533b4836e704f5946347d3630a8740d0}\label{classLogger_a533b4836e704f5946347d3630a8740d0}} 
+bool {\bfseries start} (void)
+\item 
+\mbox{\Hypertarget{classLogger_a22cd0506d5390bfc38de648bfa97bf92}\label{classLogger_a22cd0506d5390bfc38de648bfa97bf92}} 
+bool {\bfseries stop} (void)
+\item 
+\mbox{\Hypertarget{classLogger_a8ad3ba5eda0cced13a71714af89f42eb}\label{classLogger_a8ad3ba5eda0cced13a71714af89f42eb}} 
+bool {\bfseries send\+Message\+To\+Log} (Q\+String message)
+\item 
+\mbox{\Hypertarget{classLogger_a8dda103f25858c033819264bc60f378d}\label{classLogger_a8dda103f25858c033819264bc60f378d}} 
+Q\+String {\bfseries file\+Path} () const
+\item 
+\mbox{\Hypertarget{classLogger_a6e90c946d38532fdd22f61e9854078f9}\label{classLogger_a6e90c946d38532fdd22f61e9854078f9}} 
+void {\bfseries set\+File\+Path} (const Q\+String \&File\+Path)
+\item 
+\mbox{\Hypertarget{classLogger_aa8938055e67b29e5352c39aa1614ea6a}\label{classLogger_aa8938055e67b29e5352c39aa1614ea6a}} 
+Q\+String {\bfseries file\+Name} () const
+\item 
+\mbox{\Hypertarget{classLogger_ab6a3c78105faf4fc7b4eb7a2e93a30a8}\label{classLogger_ab6a3c78105faf4fc7b4eb7a2e93a30a8}} 
+void {\bfseries set\+File\+Name} (const Q\+String \&File\+Name)
+\item 
+\mbox{\Hypertarget{classLogger_ab14ce06b3d132ff6b9af26dbd9da79e6}\label{classLogger_ab14ce06b3d132ff6b9af26dbd9da79e6}} 
+Q\+String {\bfseries get\+Time\+Stamp} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classLogger_a4a2c28f7530b31a50684bee08c30c30e}\label{classLogger_a4a2c28f7530b31a50684bee08c30c30e}} 
+static \mbox{\hyperlink{classLogger}{Logger}} $\ast$ {\bfseries instance} ()
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+logger.\+h\item 
+logger.\+cpp\end{DoxyCompactItemize}

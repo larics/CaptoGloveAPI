@@ -1,0 +1,39 @@
+\mbox{\hyperlink{classCaptoGloveAPI}{Capto\+Glove\+A\+PI}} is cpp wrapper for methods for using Capto Gloves with the given S\+DK.\hypertarget{md_README_autotoc_md1}{}\doxysection{Dependencies}\label{md_README_autotoc_md1}
+Depends on {\ttfamily pthread} library which must be used and gcc 7.\+5.\+0\hypertarget{md_README_autotoc_md2}{}\doxysubsubsection{How to install gcc 7.\+5.\+0?}\label{md_README_autotoc_md2}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{sudo apt-\/get install -\/y software-\/properties-\/common}
+\DoxyCodeLine{sudo add-\/apt-\/repository ppa:ubuntu-\/toolchain-\/r/test}
+\DoxyCodeLine{sudo apt update}
+\DoxyCodeLine{sudo apt install g++-\/7 -\/y}
+\end{DoxyCode}
+
+
+Add symbolic pointers to new version\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{sudo update-\/alternatives -\/-\/install /usr/bin/gcc gcc /usr/bin/gcc-\/7 60 \(\backslash\)}
+\DoxyCodeLine{                         -\/-\/slave /usr/bin/g++ g++ /usr/bin/g++-\/7 }
+\DoxyCodeLine{sudo update-\/alternatives -\/-\/config gcc}
+\DoxyCodeLine{gcc -\/-\/version}
+\DoxyCodeLine{g++ -\/-\/version}
+\end{DoxyCode}
+\hypertarget{md_README_autotoc_md3}{}\doxysubsection{Relevant code}\label{md_README_autotoc_md3}
+There is \href{https://code.qt.io/cgit/qt/qtconnectivity.git/tree/examples/bluetooth/lowenergyscanner?h=5.15}{\texttt{ LE scanner}} used as example. And there is application where we have continuous exchange of data between B\+LE server and client on following \href{https://code.qt.io/cgit/qt/qtconnectivity.git/tree/examples/bluetooth/heartrate-game}{\texttt{ link}}\hypertarget{md_README_autotoc_md4}{}\doxysubsection{T\+O\+D\+O\+:}\label{md_README_autotoc_md4}
+
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]} Initialize controller
+\item \mbox{[}x\mbox{]} Establish connection with B\+LE device
+\item \mbox{[}x\mbox{]} Scan services
+\item \mbox{[}x\mbox{]} Check how to discover characteristics
+\item \mbox{[}x\mbox{]} Read battery value
+\item \mbox{[}x\mbox{]} Scan characteristics
+\item \mbox{[}x\mbox{]} Check for updates of certain characteristsics/services
+\item \mbox{[}x\mbox{]} Add \mbox{\hyperlink{classLogger}{Logger}} / Needed for R\+OS
+\item \mbox{[} \mbox{]} Check \mbox{\hyperlink{classLogger}{Logger}} functionality based on signals
+\item \mbox{[} \mbox{]} Map all signals and slots
+\item \mbox{[} \mbox{]} Refactor code
+\item \mbox{[} \mbox{]} Error handling (Impossible to find device, adapter not found, can\textquotesingle{}t connect, connection not working)
+\item \mbox{[} \mbox{]} Add protobuffer messages to enable writing in them 
+\end{DoxyItemize}
