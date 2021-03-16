@@ -13,14 +13,14 @@ CaptoGloveAPI is Linux driver for ROS. Intened for use with:
  - [QtBluetooth](https://doc.qt.io/qt-5/qtbluetooth-index.html) 
  - [Qt BLE overview](https://doc.qt.io/qt-5/qtbluetooth-le-overview.html)
  - [Creating Qt project files](https://doc.qt.io/qt-5/qmake-project-files.html) 
-
+ - [BLE services and characteristics](https://www.oreilly.com/library/view/getting-started-with/9781491900550/ch04.html) 
 
 # Classes that are heavily used throught development: 
  - [QtLowEnergyController](https://doc.qt.io/qt-5/qlowenergycontroller.html) 
  - [QtLowEnergyService](https://doc.qt.io/qt-5/qlowenergyservice.html) 
  - [QtLowEnergyCharacteristic](https://doc.qt.io/qt-5/qlowenergycharacteristic.html) 
  - [QtLowEnergyDescriptor](https://doc.qt.io/qt-5/qlowenergydescriptor.html) 
-
+ 
 # Qt uses BlueZ as underlying technology to support this, this resources were extremely helpful:
  - [Get started with BLE](https://www.jaredwolff.com/get-started-with-bluetooth-low-energy/)
  - [Control With BlueZ](https://learn.adafruit.com/reverse-engineering-a-bluetooth-low-energy-light-bulb/control-with-bluez) 
