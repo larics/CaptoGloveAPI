@@ -2,8 +2,8 @@ QT += core bluetooth
 QT -= gui
 
 # For final version without debug
-# CONFIG += CAPTOGLOVEAPI_LIBRARY
-# DEFINES += QT_NO_DEBUG_OUTPUT
+CONFIG += CAPTOGLOVEAPI_LIBRARY
+DEFINES += QT_NO_DEBUG_OUTPUT
 
 
 CONFIG += c+11
