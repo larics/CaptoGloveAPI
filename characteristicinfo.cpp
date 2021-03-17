@@ -15,7 +15,7 @@ void CharacteristicInfo::setCharacteristic(const QLowEnergyCharacteristic &chara
 
 QString CharacteristicInfo::getName() const
 {
-    //! [les-get-descriptors]
+    //! Get name of the characteristic
     QString name = m_characteristic.name();
     if (!name.isEmpty())
         return name;
@@ -28,7 +28,6 @@ QString CharacteristicInfo::getName() const
             break;
         }
     }
-    //! [les-get-descriptors]
 
     if (name.isEmpty())
         name = "Unknown";
