@@ -62,7 +62,7 @@ unix{
     LIBS += -pthread
 
     # Include protobuf
-    LIBS += -L"$${PROTOBUF_LIB_PATH}/build" -lprotobuf
+    LIBS += -L"/home/developer/protobuf/build" -lprotobuf
 
 }
 
