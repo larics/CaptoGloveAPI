@@ -543,7 +543,6 @@ void CaptoGloveAPI::batteryServiceStateChanged(QLowEnergyService::ServiceState s
         break;
     }
 
-    emit aliveChanged();
 
 }
 
@@ -564,7 +563,10 @@ void CaptoGloveAPI::updateBatteryLevelValue(const QLowEnergyCharacteristic &c, c
     else
         blvalue = static_cast<int>(data[1]);
 
-    qDebug() << "Battery level is: " << blvalue;
+    //qDebug() << "Battery level is: " << blvalue;
+
+    emit updateBatteryState(setBatteryMsg(blvalue));
+
 }
 
 void CaptoGloveAPI::confirmedBatteryDescWrite(const QLowEnergyDescriptor &d, const QByteArray &value)
@@ -857,8 +859,9 @@ captoglove_v1::FingerFeedbackMsg CaptoGloveAPI::setFingerMsg(QVector<int> finger
 
 }
 
-captoglove_v1::BatteryLevelMsg CaptoGloveAPI::setBatteryMsg()
+captoglove_v1::BatteryLevelMsg CaptoGloveAPI::setBatteryMsg(int batteryVal)
 {
+    m_batteryLevelValue = batteryVal;
     m_batteryMsg.set_level(m_batteryLevelValue);
 
     return m_batteryMsg;

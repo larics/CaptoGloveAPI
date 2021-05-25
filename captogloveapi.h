@@ -107,7 +107,7 @@ private slots:
     void processLoop();
 
     captoglove_v1::FingerFeedbackMsg setFingerMsg(QVector<int> fingerVector);
-    captoglove_v1::BatteryLevelMsg setBatteryMsg();
+    captoglove_v1::BatteryLevelMsg setBatteryMsg(int batteryVal);
 
 
 
@@ -124,7 +124,7 @@ Q_SIGNALS:
     void initialized();
     void testSignal();
     void updateFingerState(captoglove_v1::FingerFeedbackMsg);
-    void updateBatteryState();
+    void updateBatteryState(captoglove_v1::BatteryLevelMsg);
     void setDeviceStateSignal(CaptoGloveAPI::DeviceState state);
 
 private:
