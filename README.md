@@ -61,6 +61,15 @@ following [link](https://code.qt.io/cgit/qt/qtconnectivity.git/tree/examples/blu
 - [ ] Implement methods to enable gyroscope/accelerometer control  
 
 
+## How to build: 
+
+You can build CaptoGloveAPI-buildGCC_x64 as follows: 
+```
+cd CaptoGloveAPI-buildGCC_x64
+qmake ../CaptoGloveAPI/CaptoGloveAPI.pro 
+make -j8 
+```
+
 ## TODO: 
 - [x] Initialize controller 
 - [x] Establish connection with BLE device
