@@ -25,6 +25,12 @@ CaptoGloveAPI is Linux driver for ROS. Intened for use with:
  - [Get started with BLE](https://www.jaredwolff.com/get-started-with-bluetooth-low-energy/)
  - [Control With BlueZ](https://learn.adafruit.com/reverse-engineering-a-bluetooth-low-energy-light-bulb/control-with-bluez) 
 
+# [GAP and GATT profile](https://learn.adafruit.com/introduction-to-bluetooth-low-energy/gap)
+
+# [Bluetoothctl]
+
+Used for connecting to BLE device on linux. Sometimes has problems, check following [link](https://stackoverflow.com/questions/48279646/bluetoothctl-no-default-controller-available)
+
 # Dependencies 
 
 Depends on `pthread` library which must be used and gcc 7.5.0
